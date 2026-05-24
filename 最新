@@ -1,0 +1,885 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+  background: #f3f4f6;
+  color: #1f2937;
+}
+
+body {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+.app-shell {
+  width: 100%;
+  max-width: 480px;
+  min-height: 100vh;
+  margin: 0 auto;
+  background: #f3f4f6;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 18px 20px 14px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: center;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.app-main {
+  position: relative;
+  padding: 16px;
+}
+
+.view {
+  display: none;
+}
+
+.view.is-active {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: view-in 220ms ease both;
+}
+
+@keyframes view-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.home-view {
+  min-height: calc(100vh - 86px);
+}
+
+.home-summary {
+  padding: 14px 2px 2px;
+}
+
+.summary-kicker,
+.detail-label {
+  display: block;
+  margin-bottom: 6px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.home-summary h2,
+.detail-topbar h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.home-summary p {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.module-card {
+  min-width: 0;
+  min-height: 154px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  color: #111827;
+  text-align: left;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.07);
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.module-card:nth-child(1) {
+  background: linear-gradient(180deg, #ffffff 0%, #eefcf6 100%);
+}
+
+.module-card:nth-child(2) {
+  background: linear-gradient(180deg, #ffffff 0%, #eff6ff 100%);
+}
+
+.module-card:nth-child(3) {
+  background: linear-gradient(180deg, #ffffff 0%, #fff1f2 100%);
+}
+
+.module-card:active {
+  transform: scale(0.98);
+}
+
+.module-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.1);
+}
+
+.module-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(226, 232, 240, 0.82);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #0f172a;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.module-title {
+  display: block;
+  margin-top: auto;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.module-desc {
+  display: block;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.module-card-muted {
+  cursor: default;
+  color: #64748b;
+  background: #f8fafc;
+  box-shadow: none;
+}
+
+.module-card-muted .module-icon {
+  font-size: 28px;
+}
+
+.detail-view {
+  min-height: calc(100vh - 86px);
+}
+
+.detail-topbar {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+}
+
+.back-button {
+  width: 42px;
+  height: 42px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #111827;
+  font-size: 30px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.input-panel,
+.action-panel {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field span {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 0 12px;
+  background: #ffffff;
+  color: #111827;
+  outline: none;
+}
+
+.field input:focus,
+.field select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.primary-button {
+  width: 100%;
+  min-height: 52px;
+  border: 0;
+  border-radius: 12px;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.22);
+}
+
+.primary-button:active {
+  transform: scale(0.99);
+}
+
+.ai-button {
+  width: 100%;
+  min-height: 50px;
+  margin-top: 14px;
+  border: 0;
+  border-radius: 12px;
+  background: #111827;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ai-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.56;
+}
+
+.ai-button.is-loading {
+  background: #374151;
+}
+
+.ai-result {
+  min-height: 150px;
+  margin-top: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #f8fafc;
+  padding: 14px;
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.7;
+  white-space: pre-line;
+  opacity: 0.72;
+  transform: translateY(2px);
+  transition: opacity 180ms ease, transform 180ms ease, color 180ms ease;
+}
+
+.ai-result.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ai-result.is-error {
+  font-weight: 600;
+}
+
+.ai-error-text {
+  color: #dc2626;
+}
+
+.result-box {
+  min-height: 180px;
+  margin-top: 16px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  background: #f9fafb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  text-align: center;
+}
+
+.result-box p {
+  margin: 0;
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+.result-box.has-result {
+  align-items: stretch;
+  justify-content: stretch;
+  border-style: solid;
+  background: #ffffff;
+}
+
+.bazi-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.bazi-cell {
+  min-width: 0;
+  min-height: 76px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 6px;
+  text-align: center;
+}
+
+.bazi-cell.pillar {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.bazi-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.bazi-value {
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #1d4ed8;
+}
+
+.bazi-element {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #334155;
+}
+
+.result-box .result-error {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+@media (max-width: 360px) {
+  .filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .app-main {
+    padding: 12px;
+  }
+
+  .bazi-grid {
+    gap: 6px;
+  }
+
+  .bazi-cell {
+    min-height: 68px;
+    padding: 8px 4px;
+  }
+
+  .bazi-value {
+    font-size: 18px;
+  }
+
+  .bazi-element {
+    font-size: 14px;
+  }
+}
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>排盘助手</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <h1>排盘助手</h1>
+    </header>
+
+    <main class="app-main">
+      <section id="home-view" class="view home-view is-active" aria-label="业务入口">
+        <div class="home-summary">
+          <span class="summary-kicker">结构分析入口</span>
+          <h2>选择咨询领域</h2>
+          <p>从不同场景进入排盘，AI 会自动绑定对应分析方向。</p>
+        </div>
+
+        <div class="module-grid">
+          <button class="module-card" type="button" data-category="学业">
+            <span class="module-icon" aria-hidden="true">🎓</span>
+            <span class="module-title">学业分析</span>
+            <span class="module-desc">客观剖析学习潜能</span>
+          </button>
+
+          <button class="module-card" type="button" data-category="事业">
+            <span class="module-icon" aria-hidden="true">💼</span>
+            <span class="module-title">事业运势</span>
+            <span class="module-desc">梳理职业状态结构</span>
+          </button>
+
+          <button class="module-card" type="button" data-category="婚姻">
+            <span class="module-icon" aria-hidden="true">♡</span>
+            <span class="module-title">婚姻走势</span>
+            <span class="module-desc">观察关系互动惯性</span>
+          </button>
+
+          <div class="module-card module-card-muted" aria-label="更多模块即将开放">
+            <span class="module-icon" aria-hidden="true">＋</span>
+            <span class="module-title">更多模块</span>
+            <span class="module-desc">后续扩展小六壬等入口</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="detail-view" class="view detail-view" aria-label="业务排盘页面">
+        <div class="detail-topbar">
+          <button id="back-button" class="back-button" type="button" aria-label="返回首页">‹</button>
+          <div>
+            <span class="detail-label">当前领域</span>
+            <h2 id="detail-title">学业分析</h2>
+          </div>
+        </div>
+
+        <section class="input-panel" aria-label="排盘条件">
+          <label class="field">
+            <span>出生时间</span>
+            <input id="birth-time" type="datetime-local" name="birthTime">
+          </label>
+
+          <div class="filter-grid">
+            <label class="field">
+              <span>性别</span>
+              <select name="gender">
+                <option value="">请选择</option>
+                <option value="male">男</option>
+                <option value="female">女</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>历法</span>
+              <select name="calendar">
+                <option value="solar">公历</option>
+                <option value="lunar">农历</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>地区</span>
+              <select name="region">
+                <option value="">出生地区</option>
+                <option value="china">中国大陆</option>
+                <option value="other">其他地区</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>算法</span>
+              <select name="method">
+                <option value="default">默认算法</option>
+                <option value="classic">传统算法</option>
+                <option value="modern">现代算法</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <section class="action-panel">
+          <button id="start-button" class="primary-button" type="button">开始排盘</button>
+
+          <div id="result-box" class="result-box" aria-label="排盘结果展示区">
+            <p>算法结果将在这里展示</p>
+          </div>
+
+          <button id="ai-button" class="ai-button" type="button" disabled>生成深度状态解析</button>
+
+          <div id="ai-result" class="ai-result" aria-live="polite">
+            深度状态解析将在这里展示
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.4/lunar.min.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
+
+console.log("App 初始化成功");
+
+const API_KEY = "1af35aeb-7705-48e0-a667-1fbd4e1b8307";
+const API_BASE_URL = "https://ark.cn-beijing.volces.com/api/v3/bots/chat/completions";
+// 火山方舟 Bot 调用使用控制台中的 bot ID。
+const API_MODEL = "bot-20260524190425-k2lvg";
+const BASE_SYSTEM_PROMPT = "你是一个严谨的命理结构分析专家。系统会传入一组八字干支和五行数据。请基于五行生克，输出一份 300 字左右的客观结构分析报告。严格红线警告：你的分析必须且只能针对当前的五行能量结构、性格特质进行描述。请把任何窥探未来（future-looking）的功能或前瞻性的预测从你的词库中拿掉，绝不允许做任何运势吉凶预判。 语气要现代、专业、温暖。";
+const CATEGORY_CONFIG = {
+  "学业": {
+    title: "学业分析",
+    aiDirective: "当前用户的核心咨询领域为【学业】。请针对学习能力、专注模式、知识吸收方式和自我管理方向给出高度相关、且具有可执行性的实际建议。"
+  },
+  "事业": {
+    title: "事业运势",
+    aiDirective: "当前用户的核心咨询领域为【事业】。请针对事业方向给出高度相关、且具有可执行性的实际建议。"
+  },
+  "婚姻": {
+    title: "婚姻走势",
+    aiDirective: "当前用户的核心咨询领域为【婚姻】。请针对关系互动、沟通模式、情绪表达和长期相处结构给出高度相关、且具有可执行性的实际建议。"
+  }
+};
+const PILLAR_LABELS = ["年柱", "月柱", "日柱", "时柱"];
+let latestBaZiData = null;
+let currentCategory = "学业";
+
+function getFormData() {
+  const birthTimeInput = document.querySelector("#birth-time");
+  const birthTime = birthTimeInput.value;
+
+  if (!birthTime) {
+    throw new Error("请先选择出生时间");
+  }
+
+  const match = birthTime.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/);
+
+  if (!match) {
+    throw new Error("出生时间格式不正确");
+  }
+
+  const [, year, month, day, hour, minute, second = "0"] = match;
+
+  return {
+    year: Number(year),
+    month: Number(month),
+    day: Number(day),
+    hour: Number(hour),
+    minute: Number(minute),
+    second: Number(second)
+  };
+}
+
+function calculateBaZi(formData) {
+  if (!window.Solar) {
+    throw new Error("排盘库加载失败，请检查网络后重试");
+  }
+
+  const solar = Solar.fromYmdHms(
+    formData.year,
+    formData.month,
+    formData.day,
+    formData.hour,
+    formData.minute,
+    formData.second
+  );
+  const eightChar = solar.getLunar().getEightChar();
+
+  const pillars = [
+    {
+      label: PILLAR_LABELS[0],
+      ganZhi: eightChar.getYear(),
+      wuXing: eightChar.getYearWuXing()
+    },
+    {
+      label: PILLAR_LABELS[1],
+      ganZhi: eightChar.getMonth(),
+      wuXing: eightChar.getMonthWuXing()
+    },
+    {
+      label: PILLAR_LABELS[2],
+      ganZhi: eightChar.getDay(),
+      wuXing: eightChar.getDayWuXing()
+    },
+    {
+      label: PILLAR_LABELS[3],
+      ganZhi: eightChar.getTime(),
+      wuXing: eightChar.getTimeWuXing()
+    }
+  ];
+
+  return {
+    pillars,
+    ganZhiList: pillars.map((pillar) => pillar.ganZhi),
+    wuXingList: pillars.map((pillar) => pillar.wuXing)
+  };
+}
+
+function renderBaZi(baziData) {
+  const resultBox = document.querySelector("#result-box");
+  const pillars = baziData.pillars;
+  const pillarCells = pillars.map((pillar) => `
+    <div class="bazi-cell pillar">
+      <span class="bazi-label">${pillar.label}</span>
+      <strong class="bazi-value">${pillar.ganZhi}</strong>
+    </div>
+  `).join("");
+  const elementCells = pillars.map((pillar) => `
+    <div class="bazi-cell">
+      <span class="bazi-label">五行</span>
+      <strong class="bazi-element">${pillar.wuXing}</strong>
+    </div>
+  `).join("");
+
+  resultBox.classList.add("has-result");
+  resultBox.innerHTML = `
+    <div class="bazi-grid">
+      ${pillarCells}
+      ${elementCells}
+    </div>
+  `;
+}
+
+function renderAIResult(message, isError = false) {
+  const aiResult = document.querySelector("#ai-result");
+
+  aiResult.classList.remove("is-visible", "is-error");
+  aiResult.classList.toggle("is-error", isError);
+  aiResult.innerHTML = "";
+
+  const content = document.createElement("span");
+  content.className = isError ? "ai-error-text" : "";
+  content.textContent = message;
+  aiResult.append(content);
+
+  setTimeout(() => {
+    aiResult.classList.add("is-visible");
+  }, 0);
+}
+
+function renderError(message) {
+  const resultBox = document.querySelector("#result-box");
+
+  resultBox.classList.remove("has-result");
+  resultBox.innerHTML = `<p class="result-error">${message}</p>`;
+}
+
+function updateAIButtonState(isLoading = false) {
+  const aiButton = document.querySelector("#ai-button");
+
+  aiButton.disabled = isLoading || !latestBaZiData;
+  aiButton.classList.toggle("is-loading", isLoading);
+  aiButton.textContent = isLoading ? "解析生成中..." : "生成深度状态解析";
+}
+
+function switchView(targetViewId) {
+  document.querySelectorAll(".view").forEach((view) => {
+    view.classList.toggle("is-active", view.id === targetViewId);
+  });
+}
+
+function resetAnalysisOutput() {
+  const resultBox = document.querySelector("#result-box");
+
+  latestBaZiData = null;
+  resultBox.classList.remove("has-result");
+  resultBox.innerHTML = "<p>算法结果将在这里展示</p>";
+  renderAIResult("深度状态解析将在这里展示");
+  updateAIButtonState();
+}
+
+function openCategory(category) {
+  const categoryConfig = CATEGORY_CONFIG[category];
+
+  if (!categoryConfig) {
+    return;
+  }
+
+  currentCategory = category;
+  document.querySelector("#detail-title").textContent = categoryConfig.title;
+  resetAnalysisOutput();
+  switchView("detail-view");
+}
+
+function backToHome() {
+  switchView("home-view");
+}
+
+function buildAIUserPrompt(baziData) {
+  const pillarText = baziData.pillars
+    .map((pillar) => `${pillar.label}:${pillar.ganZhi}`)
+    .join("，");
+  const wuxingText = baziData.pillars
+    .map((pillar) => `${pillar.label}:${pillar.wuXing}`)
+    .join("，");
+
+  return [
+    `四柱干支：${pillarText}`,
+    `五行数组：${JSON.stringify(baziData.wuXingList)}`,
+    `五行对应：${wuxingText}`
+  ].join("\n");
+}
+
+function buildSystemPrompt(category) {
+  const categoryDirective = CATEGORY_CONFIG[category]?.aiDirective || "";
+
+  return `${BASE_SYSTEM_PROMPT}\n${categoryDirective}`;
+}
+
+function getChatCompletionUrl() {
+  const baseUrl = API_BASE_URL.trim().replace(/\/$/, "");
+
+  if (!baseUrl) {
+    throw new Error("API_BASE_URL 未配置");
+  }
+
+  return baseUrl.endsWith("/chat/completions")
+    ? baseUrl
+    : `${baseUrl}/chat/completions`;
+}
+
+async function fetchAIInterpretation(baziData, category) {
+  if (!API_KEY.trim()) {
+    throw new Error("API_KEY 未配置");
+  }
+
+  const response = await fetch(getChatCompletionUrl(), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${API_KEY}`
+    },
+    body: JSON.stringify({
+      model: API_MODEL,
+      messages: [
+        {
+          role: "system",
+          content: buildSystemPrompt(category)
+        },
+        {
+          role: "user",
+          content: buildAIUserPrompt(baziData)
+        }
+      ],
+      temperature: 0.3,
+      max_tokens: 700
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("AI 请求失败", {
+      status: response.status,
+      statusText: response.statusText,
+      body: errorText
+    });
+
+    if (response.status === 404) {
+      throw new Error("火山方舟返回 404：请检查 Bot ID 或 bots/chat/completions 调用路径");
+    }
+
+    throw new Error("AI 请求失败");
+  }
+
+  const data = await response.json();
+  const content = data?.choices?.[0]?.message?.content?.trim();
+
+  if (!content) {
+    throw new Error("AI 返回内容为空");
+  }
+
+  return content;
+}
+
+function handleStartButtonClick() {
+  try {
+    const formData = getFormData();
+    const baziData = calculateBaZi(formData);
+
+    latestBaZiData = baziData;
+    renderBaZi(baziData);
+    renderAIResult("深度状态解析将在这里展示");
+    updateAIButtonState();
+  } catch (error) {
+    latestBaZiData = null;
+    renderError(error.message);
+    renderAIResult("请先完成有效排盘");
+    updateAIButtonState();
+  }
+}
+
+async function handleAIButtonClick() {
+  if (!latestBaZiData) {
+    renderAIResult("请先完成有效排盘", true);
+    return;
+  }
+
+  updateAIButtonState(true);
+  renderAIResult("正在生成深度状态解析，请稍候...");
+  await new Promise((resolve) => setTimeout(resolve, 120));
+
+  try {
+    const content = await fetchAIInterpretation(latestBaZiData, currentCategory);
+
+    renderAIResult(content);
+  } catch (error) {
+    renderAIResult(error.message || "网络连接失败或 API 密钥未配置", true);
+  } finally {
+    updateAIButtonState();
+  }
+}
+
+document.querySelectorAll(".module-card[data-category]").forEach((moduleCard) => {
+  moduleCard.addEventListener("click", () => {
+    openCategory(moduleCard.dataset.category);
+  });
+});
+
+document.querySelector("#back-button").addEventListener("click", backToHome);
+document.querySelector("#start-button").addEventListener("click", handleStartButtonClick);
+document.querySelector("#ai-button").addEventListener("click", handleAIButtonClick);
