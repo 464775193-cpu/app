@@ -26,49 +26,49 @@
         <div class="home-summary">
           <span class="summary-kicker">THE MYSTICAL JOURNEY</span>
           <h2>请选择所问之事</h2>
-          <p>以极简良辰接入命盘，进入专属二级页，安静展开属于这一问的四柱观照。</p>
+          <p>以四柱原局为底，合参 2026 丙午流年，展开严谨、克制、可复核的子平批断。</p>
         </div>
 
         <section class="module-grid" aria-label="四大业务入口">
-          <button class="module-card" type="button" data-view="study-view" data-category="学业">
+          <button class="module-card" type="button" data-view="analysis-view" data-category="学业">
             <span class="module-icon" aria-hidden="true">文</span>
             <span class="module-title">学业分析</span>
-            <span class="module-desc">文昌入局，观专注、记忆与学习驱动力。</span>
+            <span class="module-desc">从印星、食伤与文昌取象，观学习驱动力。</span>
           </button>
 
-          <button class="module-card" type="button" data-view="career-view" data-category="事业">
+          <button class="module-card" type="button" data-view="analysis-view" data-category="事业">
             <span class="module-icon" aria-hidden="true">策</span>
             <span class="module-title">事业运势</span>
-            <span class="module-desc">以执行力、领导力与协作气质为核心。</span>
+            <span class="module-desc">以财官印授为纲，评估执行与承载之势。</span>
           </button>
 
-          <button class="module-card" type="button" data-view="marriage-view" data-category="婚姻">
+          <button class="module-card" type="button" data-view="analysis-view" data-category="婚姻">
             <span class="module-icon" aria-hidden="true">缘</span>
             <span class="module-title">婚姻走势</span>
-            <span class="module-desc">照见沟通模式、边界感与情感表达。</span>
+            <span class="module-desc">合参日支夫妻宫，辨沟通与情感表达。</span>
           </button>
 
           <button class="module-card" type="button" data-view="chart-view" data-category="专业">
             <span class="module-icon" aria-hidden="true">盘</span>
             <span class="module-title">命理精盘</span>
-            <span class="module-desc">纯净排盘，只呈现硬核四柱与众星罗列。</span>
+            <span class="module-desc">纯净排盘，完整呈现十神、星运与众星罗列。</span>
           </button>
         </section>
       </section>
 
-      <section id="study-view" class="view business-view" data-category="学业" data-mode="ai" hidden>
-        <nav class="detail-topbar" aria-label="学业分析导航">
+      <section id="analysis-view" class="view business-view" data-category="学业" data-mode="ai" hidden>
+        <nav class="detail-topbar" aria-label="学术批断导航">
           <button class="back-button" type="button" aria-label="返回首页">
             <span aria-hidden="true">‹</span>
           </button>
           <div>
-            <span class="topbar-kicker">文昌问学</span>
-            <h2>学业分析</h2>
+            <span id="analysis-kicker" class="topbar-kicker">文昌问学</span>
+            <h2 id="analysis-title">学业分析</h2>
           </div>
         </nav>
 
-        <section class="input-panel" aria-label="学业排盘条件">
-          <p class="panel-note">填入诞生良辰，先定四柱，再启文昌批注。</p>
+        <section class="input-panel" aria-label="批算条件">
+          <p id="analysis-note" class="panel-note">填入诞生良辰，合参 2026 丙午流年，剖析学习结构与用神消长。</p>
           <label class="field">
             <span>诞生良辰</span>
             <input class="birth-time" type="datetime-local" name="birthTime" aria-label="诞生良辰">
@@ -83,111 +83,41 @@
             </select>
           </label>
 
-          <button class="primary-button start-button" type="button">一键开启</button>
+          <button class="primary-button start-button" type="button">开启批算</button>
         </section>
 
-        <section class="chart-section is-empty" aria-label="学业四柱盘面">
+        <section class="chart-section is-empty" aria-label="四柱极简彩盘">
           <div class="section-heading">
-            <span>Professional Data</span>
-            <h3>四柱简盘</h3>
+            <span>Four Pillars</span>
+            <h3>四柱彩盘</h3>
           </div>
-          <div class="result-box" aria-label="四柱简盘"></div>
+          <div class="result-box" aria-label="四柱彩盘"></div>
         </section>
 
-        <section class="ai-section is-empty" aria-label="文昌导师批注">
-          <div class="ritual-status" aria-live="polite">正在点亮文昌星位...</div>
-          <button class="ai-button" type="button" disabled>揭示命运玄机</button>
-          <div class="ai-result" aria-live="polite"></div>
-        </section>
-      </section>
+        <section class="academic-section is-empty" aria-label="学术批断">
+          <div class="ritual-status" aria-live="polite">接入人生中...</div>
 
-      <section id="career-view" class="view business-view" data-category="事业" data-mode="ai" hidden>
-        <nav class="detail-topbar" aria-label="事业运势导航">
-          <button class="back-button" type="button" aria-label="返回首页">
-            <span aria-hidden="true">‹</span>
-          </button>
-          <div>
-            <span class="topbar-kicker">官印谋局</span>
-            <h2>事业运势</h2>
+          <div class="scholar-grid">
+            <article class="scholar-card">
+              <span class="card-kicker">2026 丙午</span>
+              <h3>运势总结</h3>
+              <div class="academic-output" data-output="summary">批算完成后在此展开。</div>
+            </article>
+
+            <article class="scholar-card">
+              <span class="card-kicker">干支宫位</span>
+              <h3>盘位星位</h3>
+              <div class="academic-output" data-output="positions">批算完成后在此展开。</div>
+            </article>
+
+            <article class="scholar-card inquiry-card">
+              <span class="card-kicker">局部焦点</span>
+              <h3>我要追问</h3>
+              <textarea class="follow-up-input" rows="4" placeholder="写下一个具体问题，如：今年备考该如何调整节奏？"></textarea>
+              <button class="follow-up-button" type="button">定向追问</button>
+              <div class="follow-up-result" aria-live="polite"></div>
+            </article>
           </div>
-        </nav>
-
-        <section class="input-panel" aria-label="事业排盘条件">
-          <p class="panel-note">填入诞生良辰，观执行之气与谋略之势。</p>
-          <label class="field">
-            <span>诞生良辰</span>
-            <input class="birth-time" type="datetime-local" name="birthTime" aria-label="诞生良辰">
-          </label>
-
-          <label class="field">
-            <span>性别</span>
-            <select class="gender-select" name="gender" aria-label="性别">
-              <option value="">请选择性别</option>
-              <option value="male">男</option>
-              <option value="female">女</option>
-            </select>
-          </label>
-
-          <button class="primary-button start-button" type="button">一键开启</button>
-        </section>
-
-        <section class="chart-section is-empty" aria-label="事业四柱盘面">
-          <div class="section-heading">
-            <span>Professional Data</span>
-            <h3>四柱简盘</h3>
-          </div>
-          <div class="result-box" aria-label="四柱简盘"></div>
-        </section>
-
-        <section class="ai-section is-empty" aria-label="职场谋略批注">
-          <div class="ritual-status" aria-live="polite">正在推演事业格局...</div>
-          <button class="ai-button" type="button" disabled>揭示命运玄机</button>
-          <div class="ai-result" aria-live="polite"></div>
-        </section>
-      </section>
-
-      <section id="marriage-view" class="view business-view" data-category="婚姻" data-mode="ai" hidden>
-        <nav class="detail-topbar" aria-label="婚姻走势导航">
-          <button class="back-button" type="button" aria-label="返回首页">
-            <span aria-hidden="true">‹</span>
-          </button>
-          <div>
-            <span class="topbar-kicker">红鸾照心</span>
-            <h2>姻缘批断</h2>
-          </div>
-        </nav>
-
-        <section class="input-panel" aria-label="婚姻排盘条件">
-          <p class="panel-note">填入诞生良辰，照见情感表达与相处气质。</p>
-          <label class="field">
-            <span>诞生良辰</span>
-            <input class="birth-time" type="datetime-local" name="birthTime" aria-label="诞生良辰">
-          </label>
-
-          <label class="field">
-            <span>性别</span>
-            <select class="gender-select" name="gender" aria-label="性别">
-              <option value="">请选择性别</option>
-              <option value="male">男</option>
-              <option value="female">女</option>
-            </select>
-          </label>
-
-          <button class="primary-button start-button" type="button">一键开启</button>
-        </section>
-
-        <section class="chart-section is-empty" aria-label="婚姻四柱盘面">
-          <div class="section-heading">
-            <span>Professional Data</span>
-            <h3>四柱简盘</h3>
-          </div>
-          <div class="result-box" aria-label="四柱简盘"></div>
-        </section>
-
-        <section class="ai-section is-empty" aria-label="情感解惑批注">
-          <div class="ritual-status" aria-live="polite">正在感应良缘羁绊...</div>
-          <button class="ai-button" type="button" disabled>揭示命运玄机</button>
-          <div class="ai-result" aria-live="polite"></div>
         </section>
       </section>
 

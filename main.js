@@ -5,54 +5,60 @@ const API_BASE_URL = "https://ark.cn-beijing.volces.com/api/v3/bots/chat/complet
 // 火山方舟 Bot 调用使用控制台中的 bot ID。
 const API_MODEL = "bot-20260524190425-k2lvg";
 
+const CURRENT_FLOW_YEAR = {
+  year: 2026,
+  ganZhi: "丙午",
+  gan: "丙",
+  zhi: "午",
+  note: "火旺之极"
+};
+
 const BASE_SYSTEM_PROMPT = [
-  "你熟稔四柱八字、五行生克与十神取象，只依据传入的命盘作当下气质与惯性分析。",
-  "严禁未来预测、运势吉凶预判、事件预言、时间点断言和宿命化表达。",
-  "严禁在正文中出现“系统”“AI”“数据模型”“接口”“算法”等科技词汇。",
-  "开篇只用“批注真言：”。全文约300字，语气温润、深邃、清醒。",
-  "必须给出至少三条可立即照做的建议，建议要具体、克制、与所问领域高度相关。"
+  "你是一位深谙子平八字与大运流年推演的严谨命理大家。",
+  "当前分析锚点固定为 2026 年，岁次丙午，丙火透干，午火当令，火旺之极。",
+  "你必须以四柱原局、大运信息、2026 丙午流年三者互参为依据；若大运信息未提供或不完整，须明示仅能以原局与流年互参，不得虚构。",
+  "拒绝心理鸡汤、玄虚恐吓、绝对化江湖断语，不输出无法从干支、十神、宫位、星运推回来的结论。",
+  "严禁出现“系统”“AI”“数据模型”“接口”“算法”等科技词汇。",
+  "不要使用神煞作为主要论证，不要输出神煞列表。",
+  "你必须直接输出纯文本内容。严禁输出 Markdown 代码块，严禁输出 JSON 格式，严禁包含任何大括号或键值对名称。"
 ].join("");
 
 const CATEGORY_CONFIG = {
   "学业": {
     title: "学业分析",
-    viewId: "study-view",
-    mode: "ai",
-    startText: "一键开启",
-    startLoadingText: "正在点亮文昌星位...",
-    aiLoadingText: "正在铺陈文昌批注...",
-    readyText: "命盘已定，可请文昌导师批注。",
-    aiDirective: "此刻你扮演【文昌导师】。请重点分析专注力、记忆模式、理解吸收、表达输出与性格中的学习驱动力；可借文昌、印星、食伤等意象说明，但不得引申为前途预判。"
+    topbarKicker: "文昌问学",
+    note: "填入诞生良辰，合参 2026 丙午流年，剖析学习结构与用神消长。",
+    startText: "开启批算",
+    startLoadingText: "正在排演命理盘局...",
+    focus: "学业",
+    directive: "当前板块为【学业】。请聚焦印星、食伤、文书表达、记忆吸收、专注稳定度与考试/研究节奏。"
   },
   "事业": {
     title: "事业运势",
-    viewId: "career-view",
-    mode: "ai",
-    startText: "一键开启",
-    startLoadingText: "正在推演事业格局...",
-    aiLoadingText: "正在凝练谋略批注...",
-    readyText: "命盘已定，可请职场谋略批注。",
-    aiDirective: "此刻你扮演【职场谋略家】。禁用未来预测，只客观分析性格中的执行力与领导力平衡、协作方式、抗压节奏和资源调配习惯；建议必须落在定位、沟通、执行与复盘上。"
+    topbarKicker: "官印谋局",
+    note: "填入诞生良辰，合参 2026 丙午流年，推演财官印授与承载之势。",
+    startText: "开启批算",
+    startLoadingText: "正在排演命理盘局...",
+    focus: "事业",
+    directive: "当前板块为【事业】。请聚焦财星、官杀、印授、执行力、领导力、资源承载、组织协作与职业定位。"
   },
   "婚姻": {
     title: "姻缘批断",
-    viewId: "marriage-view",
-    mode: "ai",
-    startText: "一键开启",
-    startLoadingText: "正在感应良缘羁绊...",
-    aiLoadingText: "正在化开情感脉络...",
-    readyText: "命盘已定，可请情感解惑批注。",
-    aiDirective: "此刻你扮演【情感解惑者】。请侧重沟通模式、情感表达特质、边界感、亲密关系中的安全感来源与五行气质剖析；不得断言婚恋事件或良缘时间。"
+    topbarKicker: "红鸾照心",
+    note: "填入诞生良辰，合参 2026 丙午流年，辨析夫妻宫与情感表达结构。",
+    startText: "开启批算",
+    startLoadingText: "正在排演命理盘局...",
+    focus: "婚姻",
+    directive: "当前板块为【婚姻】。请聚焦日支夫妻宫、财官对配偶取象、沟通方式、情感表达、边界感与亲密关系稳定度。"
   },
   "专业": {
     title: "命理精盘",
-    viewId: "chart-view",
-    mode: "tool",
+    topbarKicker: "四柱全盘",
+    note: "此页只做专业排盘，不唤起任何批注。",
     startText: "开始排盘",
     startLoadingText: "正在铺陈四柱精盘...",
-    aiLoadingText: "",
-    readyText: "",
-    aiDirective: ""
+    focus: "专业",
+    directive: ""
   }
 };
 
@@ -60,6 +66,7 @@ const PILLAR_METHODS = [
   {
     key: "year",
     label: "年柱",
+    palace: "祖上、早年环境、外部名分",
     ganZhi: "getYear",
     gan: "getYearGan",
     zhi: "getYearZhi",
@@ -74,6 +81,7 @@ const PILLAR_METHODS = [
   {
     key: "month",
     label: "月柱",
+    palace: "月令提纲、事业环境、成事节令",
     ganZhi: "getMonth",
     gan: "getMonthGan",
     zhi: "getMonthZhi",
@@ -88,6 +96,7 @@ const PILLAR_METHODS = [
   {
     key: "day",
     label: "日柱",
+    palace: "日主自身、夫妻宫、核心关系位",
     ganZhi: "getDay",
     gan: "getDayGan",
     zhi: "getDayZhi",
@@ -102,6 +111,7 @@ const PILLAR_METHODS = [
   {
     key: "time",
     label: "时柱",
+    palace: "后劲、输出、子女/成果位",
     ganZhi: "getTime",
     gan: "getTimeGan",
     zhi: "getTimeZhi",
@@ -128,6 +138,19 @@ const GAN_WU_XING = {
   "癸": "水"
 };
 
+const GAN_YIN_YANG = {
+  "甲": "阳",
+  "乙": "阴",
+  "丙": "阳",
+  "丁": "阴",
+  "戊": "阳",
+  "己": "阴",
+  "庚": "阳",
+  "辛": "阴",
+  "壬": "阳",
+  "癸": "阴"
+};
+
 const ZHI_WU_XING = {
   "寅": "木",
   "卯": "木",
@@ -151,10 +174,43 @@ const WU_XING_COLORS = {
   "水": "#3b82f6"
 };
 
+const ELEMENT_GENERATES = {
+  "木": "火",
+  "火": "土",
+  "土": "金",
+  "金": "水",
+  "水": "木"
+};
+
+const ELEMENT_CONTROLS = {
+  "木": "土",
+  "土": "水",
+  "水": "火",
+  "火": "金",
+  "金": "木"
+};
+
+const ZHI_ORDER = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
+const CHANG_SHENG_STATES = ["长生", "沐浴", "冠带", "临官", "帝旺", "衰", "病", "死", "墓", "绝", "胎", "养"];
+const CHANG_SHENG_START = {
+  "甲": "亥",
+  "乙": "午",
+  "丙": "寅",
+  "丁": "酉",
+  "戊": "寅",
+  "己": "酉",
+  "庚": "巳",
+  "辛": "子",
+  "壬": "申",
+  "癸": "卯"
+};
+
 const BIRTH_TIME_PATTERN = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/;
 const STANDARD_CHART_METHOD = "通用排法";
 const RITUAL_LOADING_MS = 3000;
-const START_LOADING_MS = 520;
+const START_LOADING_MS = 420;
+const DOSSIER_CACHE_PREFIX = "tianji_dossier_v1";
+const DOSSIER_CACHE_NOTICE = "命盘已解：此良辰曾排演，已为您调取天机卷宗。";
 
 const SHEN_SHA_DESCRIPTIONS = {
   "天乙贵人": "遇事多得助力，适合主动请教、借力成事。",
@@ -190,11 +246,13 @@ const SHEN_SHA_DESCRIPTIONS = {
 
 const viewState = new Map();
 let currentView = null;
+let currentAnalysisCategory = "学业";
 
 function getViewState(view) {
   if (!viewState.has(view.id)) {
     viewState.set(view.id, {
-      baziData: null
+      baziData: null,
+      category: view.dataset.category || "学业"
     });
   }
 
@@ -211,10 +269,16 @@ function isProfessionalCategory(category) {
 
 function getFormData(view) {
   const birthTimeInput = view.querySelector(".birth-time");
+  const genderSelect = view.querySelector(".gender-select");
   const birthTime = birthTimeInput?.value || "";
+  const gender = genderSelect?.value || "";
 
   if (!birthTime) {
     throw new Error("请先选择诞生良辰");
+  }
+
+  if (!gender) {
+    throw new Error("请选择性别，以便排定大运顺逆");
   }
 
   const match = birthTime.match(BIRTH_TIME_PATTERN);
@@ -231,7 +295,10 @@ function getFormData(view) {
     day: Number(day),
     hour: Number(hour),
     minute: Number(minute),
-    second: Number(second)
+    second: Number(second),
+    gender,
+    genderText: gender === "male" ? "男" : "女",
+    birthText: birthTime
   };
 
   validateBirthTimeParts(parsedTime);
@@ -506,6 +573,7 @@ function calculateBaZi(formData) {
     const pillar = {
       key: method.key,
       label: method.label,
+      palace: method.palace,
       ganZhi: eightChar[method.ganZhi](),
       gan: eightChar[method.gan](),
       zhi: eightChar[method.zhi](),
@@ -522,10 +590,18 @@ function calculateBaZi(formData) {
 
     return pillar;
   });
+  const dayMaster = eightChar.getDayGan();
 
   return {
     chartMethod,
+    formData,
+    solarText: solar.toYmdHms(),
+    lunarText: lunar.toString(),
     pillars,
+    dayMaster,
+    dayMasterElement: getElementOf(dayMaster),
+    liuNian: analyzeLiuNian(pillars, dayMaster),
+    daYun: extractDaYunInfo(eightChar, formData.gender),
     wuXingStats: getWuXingStats(pillars),
     allShenSha: getAllShenSha(pillars),
     ganZhiList: pillars.map((pillar) => pillar.ganZhi),
@@ -533,7 +609,219 @@ function calculateBaZi(formData) {
   };
 }
 
-function openBusinessView(viewId) {
+function readMethod(target, methodName) {
+  try {
+    return typeof target?.[methodName] === "function" ? target[methodName]() : "";
+  } catch (error) {
+    return "";
+  }
+}
+
+function extractDaYunInfo(eightChar, gender) {
+  if (typeof eightChar.getYun !== "function") {
+    return {
+      available: false,
+      text: "当前排盘库未暴露大运接口，仅能以四柱原局与 2026 丙午流年互参。"
+    };
+  }
+
+  try {
+    const genderNumber = gender === "male" ? 1 : 0;
+    const yun = eightChar.getYun(genderNumber, 1);
+    const daYunList = normalizeList(readMethod(yun, "getDaYun")).map((daYun) => {
+      const startYear = Number(readMethod(daYun, "getStartYear"));
+      const endYear = Number(readMethod(daYun, "getEndYear"));
+
+      return {
+        ganZhi: readMethod(daYun, "getGanZhi"),
+        startAge: readMethod(daYun, "getStartAge"),
+        endAge: readMethod(daYun, "getEndAge"),
+        startYear,
+        endYear,
+        xunKong: readMethod(daYun, "getXunKong")
+      };
+    });
+    const current = daYunList.find((item) => item.startYear <= CURRENT_FLOW_YEAR.year && CURRENT_FLOW_YEAR.year <= item.endYear) || null;
+
+    return {
+      available: true,
+      startYear: readMethod(yun, "getStartYear"),
+      startMonth: readMethod(yun, "getStartMonth"),
+      startDay: readMethod(yun, "getStartDay"),
+      current,
+      list: daYunList.slice(0, 8),
+      text: current
+        ? `${current.startYear}-${current.endYear} ${current.ganZhi}大运（${current.startAge}-${current.endAge}岁）`
+        : "未定位到覆盖 2026 年的大运段。"
+    };
+  } catch (error) {
+    return {
+      available: false,
+      text: "大运接口读取失败，仅能以四柱原局与 2026 丙午流年互参。"
+    };
+  }
+}
+
+function getTenGod(dayGan, targetGan) {
+  const dayElement = getElementOf(dayGan);
+  const targetElement = getElementOf(targetGan);
+  const samePolarity = GAN_YIN_YANG[dayGan] === GAN_YIN_YANG[targetGan];
+
+  if (!dayElement || !targetElement) {
+    return "";
+  }
+
+  if (dayElement === targetElement) {
+    return samePolarity ? "比肩" : "劫财";
+  }
+
+  if (ELEMENT_GENERATES[dayElement] === targetElement) {
+    return samePolarity ? "食神" : "伤官";
+  }
+
+  if (ELEMENT_CONTROLS[dayElement] === targetElement) {
+    return samePolarity ? "偏财" : "正财";
+  }
+
+  if (ELEMENT_CONTROLS[targetElement] === dayElement) {
+    return samePolarity ? "七杀" : "正官";
+  }
+
+  if (ELEMENT_GENERATES[targetElement] === dayElement) {
+    return samePolarity ? "偏印" : "正印";
+  }
+
+  return "";
+}
+
+function getChangShengState(dayGan, targetZhi) {
+  const startZhi = CHANG_SHENG_START[dayGan];
+
+  if (!startZhi) {
+    return "";
+  }
+
+  const startIndex = ZHI_ORDER.indexOf(startZhi);
+  const targetIndex = ZHI_ORDER.indexOf(targetZhi);
+  const isYangGan = ["甲", "丙", "戊", "庚", "壬"].includes(dayGan);
+  const offset = isYangGan
+    ? (targetIndex - startIndex + 12) % 12
+    : (startIndex - targetIndex + 12) % 12;
+
+  return CHANG_SHENG_STATES[offset] || "";
+}
+
+function analyzeLiuNian(pillars, dayMaster) {
+  const branches = pillars.map((pillar) => pillar.zhi);
+  const ganNotes = pillars.map((pillar) => {
+    const relation = getGanRelation(CURRENT_FLOW_YEAR.gan, pillar.gan);
+
+    return `${CURRENT_FLOW_YEAR.gan}火临${pillar.label}${pillar.gan}，${relation || "以五行生克观其消长"}`;
+  });
+  const zhiNotes = pillars.flatMap((pillar) => getZhiRelations(pillar.zhi, branches).map((note) => `${CURRENT_FLOW_YEAR.zhi}临${pillar.label}${pillar.zhi}：${note}`));
+
+  return {
+    year: CURRENT_FLOW_YEAR.year,
+    ganZhi: CURRENT_FLOW_YEAR.ganZhi,
+    tenGod: getTenGod(dayMaster, CURRENT_FLOW_YEAR.gan),
+    dayMasterInWu: getChangShengState(dayMaster, CURRENT_FLOW_YEAR.zhi),
+    ganNotes,
+    zhiNotes: uniqueList(zhiNotes)
+  };
+}
+
+function getGanRelation(flowGan, natalGan) {
+  const fiveHe = {
+    "甲己": "天干相合，化土之象需看月令能否承化",
+    "乙庚": "天干相合，金木相牵，主规则与生发互相牵制",
+    "丙辛": "丙辛相合，火金相制而有合水之名，须看原局水气能否承接",
+    "丁壬": "天干相合，火水相济，重在印食与情绪流通",
+    "戊癸": "天干相合，土水相制，重在承载与流动的平衡"
+  };
+  const key = [flowGan, natalGan].sort().join("");
+  const flowElement = getElementOf(flowGan);
+  const natalElement = getElementOf(natalGan);
+
+  if (fiveHe[key]) {
+    return fiveHe[key];
+  }
+
+  if (ELEMENT_GENERATES[flowElement] === natalElement) {
+    return `${flowElement}生${natalElement}，流年之气生扶原局天干`;
+  }
+
+  if (ELEMENT_GENERATES[natalElement] === flowElement) {
+    return `${natalElement}生${flowElement}，原局天干泄向流年之气`;
+  }
+
+  if (ELEMENT_CONTROLS[flowElement] === natalElement) {
+    return `${flowElement}克${natalElement}，流年之气制约原局天干`;
+  }
+
+  if (ELEMENT_CONTROLS[natalElement] === flowElement) {
+    return `${natalElement}克${flowElement}，原局天干反制流年之气`;
+  }
+
+  return "";
+}
+
+function getZhiRelations(natalZhi, allNatalZhi) {
+  const notes = [];
+
+  if (natalZhi === "子") {
+    notes.push("子午冲，水火正冲，动象明显，需看冲在何柱何宫");
+  }
+
+  if (natalZhi === "午") {
+    notes.push("午午自刑，火势重叠，易见内在焦灼与重复耗力");
+  }
+
+  if (natalZhi === "未") {
+    notes.push("午未六合，火土相引，合象需看是否化土成局");
+  }
+
+  if (natalZhi === "丑") {
+    notes.push("丑午相害，湿土与烈火暗伤，重在隐性消耗");
+  }
+
+  if (natalZhi === "寅" || natalZhi === "戌") {
+    notes.push("寅午戌火局有半合之势，火气被引动");
+  }
+
+  if (allNatalZhi.includes("寅") && allNatalZhi.includes("戌")) {
+    notes.push("原局见寅戌，逢午可成寅午戌三合火局");
+  }
+
+  return uniqueList(notes);
+}
+
+function openModule(viewId, category) {
+  if (category === "专业") {
+    showView("chart-view");
+    return;
+  }
+
+  currentAnalysisCategory = category;
+  configureAnalysisView(category);
+  showView("analysis-view");
+}
+
+function configureAnalysisView(category) {
+  const view = document.querySelector("#analysis-view");
+  const config = getCategoryConfig(category);
+  const state = getViewState(view);
+
+  view.dataset.category = category;
+  state.category = category;
+  state.baziData = null;
+  document.querySelector("#analysis-title").textContent = config.title;
+  document.querySelector("#analysis-kicker").textContent = config.topbarKicker;
+  document.querySelector("#analysis-note").textContent = config.note;
+  resetAnalysisOutput(view);
+  setStartButtonLoading(view, false);
+}
+
+function showView(viewId) {
   const targetView = document.querySelector(`#${viewId}`);
   const homeView = document.querySelector("#home-view");
 
@@ -551,7 +839,6 @@ function openBusinessView(viewId) {
     view.classList.toggle("is-active", isTarget);
   });
 
-  updateAIButtonState(targetView);
   window.scrollTo({
     top: 0,
     behavior: "smooth"
@@ -572,6 +859,107 @@ function backToHome() {
     top: 0,
     behavior: "smooth"
   });
+}
+
+function resetAnalysisOutput(view) {
+  const chartSection = view.querySelector(".chart-section");
+  const resultBox = view.querySelector(".result-box");
+  const academicSection = view.querySelector(".academic-section");
+  const followUpInput = view.querySelector(".follow-up-input");
+
+  renderCacheNotice(view, false);
+  chartSection?.classList.add("is-empty");
+  resultBox?.classList.remove("has-result");
+  if (resultBox) {
+    resultBox.innerHTML = "";
+  }
+  academicSection?.classList.add("is-empty");
+  academicSection?.classList.remove("is-loading");
+  setAcademicOutput(view, "summary", "批算完成后在此展开。");
+  setAcademicOutput(view, "positions", "批算完成后在此展开。");
+  renderFollowUpResult(view, "", false);
+  if (followUpInput) {
+    followUpInput.value = "";
+  }
+  updateRitualStatus(view, false);
+}
+
+function createDossierCacheKey(formData, category) {
+  const birthKey = [
+    formData.yearText,
+    String(formData.month).padStart(2, "0"),
+    String(formData.day).padStart(2, "0"),
+    String(formData.hour).padStart(2, "0"),
+    String(formData.minute).padStart(2, "0"),
+    String(formData.second).padStart(2, "0")
+  ].join("");
+
+  return `${DOSSIER_CACHE_PREFIX}_${birthKey}_${formData.genderText}_${category}`;
+}
+
+function readDossierCache(cacheKey) {
+  try {
+    const rawCache = localStorage.getItem(cacheKey);
+
+    if (!rawCache) {
+      return null;
+    }
+
+    const parsedCache = JSON.parse(rawCache);
+
+    if (!parsedCache?.summary || !parsedCache?.positions) {
+      return null;
+    }
+
+    return {
+      summary: sanitizePlainText(parsedCache.summary),
+      positions: sanitizePlainText(parsedCache.positions)
+    };
+  } catch (error) {
+    console.warn("天机卷宗读取失败", error);
+    return null;
+  }
+}
+
+function writeDossierCache(cacheKey, payload) {
+  if (!payload?.summary || !payload?.positions) {
+    return;
+  }
+
+  try {
+    localStorage.setItem(cacheKey, JSON.stringify({
+      summary: sanitizePlainText(payload.summary),
+      positions: sanitizePlainText(payload.positions),
+      createdAt: new Date().toISOString()
+    }));
+  } catch (error) {
+    console.warn("天机卷宗写入失败", error);
+  }
+}
+
+function renderCacheNotice(view, isVisible = false) {
+  const chartSection = view.querySelector(".chart-section");
+
+  if (!chartSection) {
+    return;
+  }
+
+  let notice = chartSection.querySelector(".cache-notice");
+
+  if (!notice) {
+    notice = document.createElement("p");
+    notice.className = "cache-notice";
+    notice.style.margin = "0 0 10px";
+    notice.style.color = "#5e8f78";
+    notice.style.fontSize = "12px";
+    notice.style.fontWeight = "800";
+    notice.style.lineHeight = "1.6";
+    notice.style.textAlign = "center";
+    chartSection.querySelector(".section-heading")?.after(notice);
+  }
+
+  notice.hidden = !isVisible;
+  notice.textContent = isVisible ? DOSSIER_CACHE_NOTICE : "";
 }
 
 function renderBaZi(baziData, view, options = {}) {
@@ -652,7 +1040,7 @@ function renderBaZi(baziData, view, options = {}) {
 
 function renderMiniPillarCards(pillars) {
   return `
-    <div class="mini-pillar-grid" aria-label="天干地支四柱简盘">
+    <div class="mini-pillar-grid" aria-label="天干地支四柱彩盘">
       ${pillars.map((pillar) => `
         <article class="mini-pillar-card">
           <span class="mini-pillar-label">${escapeHTML(pillar.label)}</span>
@@ -761,61 +1149,51 @@ function renderTagList(items, size = "") {
   `;
 }
 
-function renderAIResult(message, view, isError = false) {
-  const aiSection = view.querySelector(".ai-section");
-  const aiResult = view.querySelector(".ai-result");
+function showAcademicSection(view) {
+  const academicSection = view.querySelector(".academic-section");
 
-  if (!aiSection || !aiResult) {
+  academicSection?.classList.remove("is-empty");
+}
+
+function setAcademicOutput(view, type, content, isError = false) {
+  const output = view.querySelector(`[data-output="${type}"]`);
+
+  if (!output) {
     return;
   }
 
-  aiSection.classList.remove("is-empty");
-  aiResult.classList.remove("is-visible", "is-error", "has-ink-lines");
-  aiResult.classList.toggle("is-error", isError);
-  aiResult.innerHTML = "";
-
-  if (isError) {
-    const content = document.createElement("span");
-
-    content.className = "ai-error-text";
-    content.textContent = message;
-    aiResult.append(content);
-  } else {
-    aiResult.classList.add("has-ink-lines");
-
-    const title = document.createElement("h3");
-
-    title.textContent = "批注真言";
-    aiResult.append(title);
-
-    getInkLines(message).forEach((line, index) => {
-      const lineNode = document.createElement("span");
-
-      lineNode.className = "ink-line";
-      lineNode.style.animationDelay = `${index * 130}ms`;
-      lineNode.textContent = line;
-      aiResult.append(lineNode);
-    });
-  }
-
-  setTimeout(() => {
-    aiResult.classList.add("is-visible");
-  }, 0);
+  output.classList.toggle("is-error", isError);
+  output.innerHTML = renderParagraphLines(content);
 }
 
-function getInkLines(message) {
-  const text = String(message || "").trim();
-
-  if (!text) {
-    return ["批注将在此显现。"];
-  }
-
-  return text
-    .replace(/^批注真言[:：]\s*/, "")
+function renderParagraphLines(content) {
+  const lines = String(content || "")
     .split(/\n+/)
-    .flatMap((paragraph) => paragraph.match(/[^。；！？]+[。；！？]?/g) || [paragraph])
     .map((line) => line.trim())
     .filter(Boolean);
+
+  if (!lines.length) {
+    return "";
+  }
+
+  return lines.map((line) => `<p>${escapeHTML(line)}</p>`).join("");
+}
+
+function renderAcademicResult(view, payload, isError = false) {
+  showAcademicSection(view);
+  setAcademicOutput(view, "summary", payload.summary || "未能生成运势总结。", isError);
+  setAcademicOutput(view, "positions", payload.positions || "未能生成盘位星位。", isError);
+}
+
+function renderFollowUpResult(view, message, isError = false) {
+  const result = view.querySelector(".follow-up-result");
+
+  if (!result) {
+    return;
+  }
+
+  result.classList.toggle("is-error", isError);
+  result.innerHTML = message ? renderParagraphLines(message) : "";
 }
 
 function renderError(message, view) {
@@ -830,7 +1208,7 @@ function renderError(message, view) {
     shenShaBox.classList.remove("has-result");
     shenShaBox.innerHTML = "";
   }
-  hideAISection(view);
+  updateRitualStatus(view, false);
 }
 
 function setStartButtonLoading(view, isLoading = false) {
@@ -846,81 +1224,83 @@ function setStartButtonLoading(view, isLoading = false) {
   button.textContent = isLoading ? categoryConfig.startLoadingText : categoryConfig.startText;
 }
 
-function updateAIButtonState(view, isLoading = false) {
-  const aiButton = view?.querySelector(".ai-button");
-  const category = view?.dataset.category;
-  const categoryConfig = getCategoryConfig(category);
-  const state = view ? getViewState(view) : { baziData: null };
+function setFollowUpLoading(view, isLoading = false) {
+  const button = view.querySelector(".follow-up-button");
 
-  if (!aiButton) {
+  if (!button) {
     return;
   }
 
-  aiButton.disabled = isLoading || !state.baziData || isProfessionalCategory(category);
-  aiButton.classList.toggle("is-loading", isLoading);
-  aiButton.textContent = isLoading ? categoryConfig.aiLoadingText : "揭示命运玄机";
+  button.disabled = isLoading;
+  button.classList.toggle("is-loading", isLoading);
+  button.textContent = isLoading ? "先生正在审视命主疑惑..." : "定向追问";
 }
 
 function updateRitualStatus(view, isVisible = false) {
   const ritualStatus = view.querySelector(".ritual-status");
+  const academicSection = view.querySelector(".academic-section");
 
   if (!ritualStatus) {
     return;
   }
 
+  if (isVisible) {
+    academicSection?.classList.remove("is-empty");
+  }
   ritualStatus.classList.toggle("is-visible", isVisible);
 }
 
-function hideAISection(view) {
-  const aiSection = view.querySelector(".ai-section");
-  const aiResult = view.querySelector(".ai-result");
-
-  if (!aiSection || !aiResult) {
-    return;
-  }
-
-  updateRitualStatus(view);
-  aiSection.classList.add("is-empty");
-  aiResult.classList.remove("is-visible", "is-error", "has-ink-lines");
-  aiResult.innerHTML = "";
-  updateAIButtonState(view);
-}
-
-function buildAIUserPrompt(baziData, category) {
+function buildAIUserPrompt(baziData, category, options = {}) {
   const pillarText = baziData.pillars.map((pillar) => [
     `${pillar.label}:${pillar.ganZhi}`,
+    `宫位:${pillar.palace}`,
     `主星:${pillar.shiShenGan}`,
-    `天干:${pillar.gan}`,
-    `地支:${pillar.zhi}`,
+    `天干:${pillar.gan}(${getElementOf(pillar.gan)})`,
+    `地支:${pillar.zhi}(${getElementOf(pillar.zhi)})`,
     `藏干:${pillar.hideGan.join("/")}`,
     `副星:${pillar.shiShenZhi.join("/")}`,
     `星运:${pillar.diShi}`,
     `空亡:${pillar.xunKong}`,
-    `纳音:${pillar.naYin}`,
-    `神煞:${pillar.shenSha.join("/") || "无"}`
+    `纳音:${pillar.naYin}`
   ].join("，")).join("\n");
   const wuXingText = baziData.wuXingStats
     .map((item) => `${item.element}:${item.percent}%`)
     .join("，");
-  const shenShaText = (baziData.allShenSha || [])
-    .map((item) => `${item.name}（${item.sources.join("/")}）`)
-    .join("，") || "无";
+  const liuNianText = [
+    `${CURRENT_FLOW_YEAR.year} ${CURRENT_FLOW_YEAR.ganZhi}，${CURRENT_FLOW_YEAR.note}`,
+    `流年天干${CURRENT_FLOW_YEAR.gan}对日主${baziData.dayMaster}为${baziData.liuNian.tenGod || "待定十神"}`,
+    `日主${baziData.dayMaster}在午地十二长生为${baziData.liuNian.dayMasterInWu || "待定"}`,
+    `天干作用:${baziData.liuNian.ganNotes.join("；")}`,
+    `地支作用:${baziData.liuNian.zhiNotes.join("；") || "原局未见明显子午冲、午午自刑、午未合、丑午害、寅午戌火局触发"}`
+  ].join("\n");
+  const modeText = options.mode === "followUp"
+    ? `追问:${options.question}`
+    : "任务:按【运势总结】与【盘位星位】两个标题输出纯文本内容。";
 
   return [
-    `当前所问领域：${category}`,
-    "四柱精盘：",
-    pillarText,
-    `五行排布：${baziData.wuXingList.join("，")}`,
-    `五行占比：${wuXingText}`,
-    `众星罗列：${shenShaText}`,
-    "请以此命盘为准，勿另造生辰。"
+    `当前板块:${category}`,
+    `出生:${baziData.formData.birthText}，性别:${baziData.formData.genderText}`,
+    `日主:${baziData.dayMaster}，日主五行:${baziData.dayMasterElement}`,
+    `四柱精盘:\n${pillarText}`,
+    `五行占比:${wuXingText}`,
+    `大运信息:${baziData.daYun.text}`,
+    `2026丙午流年互参:\n${liuNianText}`,
+    modeText,
+    "请严格依据以上信息，不得另造生辰。"
   ].join("\n");
 }
 
-function buildSystemPrompt(category) {
-  const categoryDirective = CATEGORY_CONFIG[category]?.aiDirective || "";
+function buildSystemPrompt(category, mode = "initial") {
+  const directive = CATEGORY_CONFIG[category]?.directive || "";
+  const outputRule = mode === "followUp"
+    ? "追问模式必须直接输出纯文本，不要标题，不要编号，不要 JSON，不要 Markdown，不要大括号，不要 followUp 或 answer 等键名。内容不少于180字，围绕用户具体疑问，代入四柱原局、大运与2026丙午流年，给出局部焦点解答；必须客观理性，不作绝对化断言。"
+    : [
+      "初始批断必须直接输出纯文本，只能包含【运势总结】与【盘位星位】两个标题段落，不要输出任何 JSON、键值对或大括号。",
+      "【运势总结】规范：从日主五行强弱喜忌出发，论述 2026 丙午年火旺之极对当前板块的财官印授消长、用神到位或受克的宏观总揽。",
+      "【盘位星位】规范：必须指出天干五行生克、地支刑冲合害、十神宫位权重，并结合长生十二神在午地的状态进行论述。"
+    ].join("");
 
-  return `${BASE_SYSTEM_PROMPT}\n${categoryDirective}`;
+  return `${BASE_SYSTEM_PROMPT}${directive}${outputRule}`;
 }
 
 function getChatCompletionUrl() {
@@ -935,11 +1315,12 @@ function getChatCompletionUrl() {
     : `${baseUrl}/chat/completions`;
 }
 
-async function fetchAIInterpretation(baziData, category) {
+async function fetchAIInterpretation(baziData, category, options = {}) {
   if (!API_KEY.trim()) {
     throw new Error("API_KEY 未配置");
   }
 
+  const mode = options.mode || "initial";
   const response = await fetch(getChatCompletionUrl(), {
     method: "POST",
     headers: {
@@ -951,15 +1332,16 @@ async function fetchAIInterpretation(baziData, category) {
       messages: [
         {
           role: "system",
-          content: buildSystemPrompt(category)
+          content: buildSystemPrompt(category, mode)
         },
         {
           role: "user",
-          content: buildAIUserPrompt(baziData, category)
+          content: buildAIUserPrompt(baziData, category, options)
         }
       ],
-      temperature: 0.3,
-      max_tokens: 700
+      temperature: 0,
+      top_p: 0,
+      max_tokens: mode === "followUp" ? 900 : 1300
     })
   });
 
@@ -986,13 +1368,85 @@ async function fetchAIInterpretation(baziData, category) {
     throw new Error("批注暂未生成");
   }
 
-  return content;
+  return parseAIContent(content, mode);
+}
+
+function parseAIContent(content, mode) {
+  const cleaned = stripCodeFence(content);
+
+  try {
+    const parsed = JSON.parse(cleaned);
+
+    if (mode === "followUp") {
+      return {
+        followUp: sanitizePlainText(parsed.followUp || parsed.answer || parsed.content || parsed.text || "")
+      };
+    }
+
+    return {
+      summary: sanitizePlainText(parsed.summary || parsed["运势总结"] || ""),
+      positions: sanitizePlainText(parsed.positions || parsed["盘位星位"] || "")
+    };
+  } catch (error) {
+    if (mode === "followUp") {
+      return {
+        followUp: sanitizePlainText(cleaned)
+      };
+    }
+
+    return splitFallbackAcademicText(cleaned);
+  }
+}
+
+function splitFallbackAcademicText(text) {
+  const cleaned = stripCodeFence(text);
+  const summaryMatch = cleaned.match(/(?:【?运势总结】?|summary)[:：\s]*([\s\S]*?)(?:【?盘位星位】?|positions)[:：\s]*/i);
+  const positionsMatch = cleaned.match(/(?:【?盘位星位】?|positions)[:：\s]*([\s\S]*)/i);
+
+  return {
+    summary: sanitizePlainText(summaryMatch ? summaryMatch[1] : cleaned),
+    positions: sanitizePlainText(positionsMatch ? positionsMatch[1] : "原文未能分段，请检查模型返回格式。")
+  };
+}
+
+function stripCodeFence(value) {
+  return String(value ?? "")
+    .replace(/^```json\s*/i, "")
+    .replace(/^```\s*/i, "")
+    .replace(/```$/i, "")
+    .trim();
+}
+
+function sanitizePlainText(value) {
+  const stripped = stripCodeFence(value);
+  let text = stripped;
+
+  try {
+    const parsed = JSON.parse(stripped);
+
+    if (typeof parsed === "string") {
+      text = parsed;
+    } else if (parsed && typeof parsed === "object") {
+      text = parsed.followUp || parsed.answer || parsed.content || parsed.text || parsed.summary || parsed.positions || Object.values(parsed).join(" ");
+    }
+  } catch (error) {
+    text = stripped;
+  }
+
+  return String(text ?? "")
+    .replace(/\\n/g, " ")
+    .replace(/\r?\n/g, " ")
+    .replace(/followUp|follow_up|answer|content|summary|positions/gi, "")
+    .replace(/运势总结|盘位星位/g, "")
+    .replace(/[{}"]/g, "")
+    .replace(/^\s*[:：,，]+/, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
 }
 
 async function handleStartButtonClick(event) {
   const view = event.currentTarget.closest(".business-view");
   const category = view.dataset.category;
-  const categoryConfig = getCategoryConfig(category);
   const state = getViewState(view);
 
   try {
@@ -1004,53 +1458,43 @@ async function handleStartButtonClick(event) {
     const baziData = calculateBaZi(formData);
 
     state.baziData = baziData;
+    state.category = category;
     renderBaZi(baziData, view, {
       compact: !isProfessionalCategory(category)
     });
 
     if (isProfessionalCategory(category)) {
-      hideAISection(view);
-    } else {
-      renderAIResult(categoryConfig.readyText, view);
-      updateAIButtonState(view);
+      renderCacheNotice(view, false);
+      view.querySelector(".chart-section").scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+      return;
     }
 
-    view.querySelector(".chart-section").scrollIntoView({
-      behavior: "smooth",
-      block: "start"
-    });
-  } catch (error) {
-    state.baziData = null;
-    renderError(error.message, view);
-    updateAIButtonState(view);
-  } finally {
-    setStartButtonLoading(view, false);
-  }
-}
+    const cacheKey = createDossierCacheKey(formData, category);
+    const cachedInterpretation = readDossierCache(cacheKey);
 
-async function handleAIButtonClick(event) {
-  const view = event.currentTarget.closest(".business-view");
-  const category = view.dataset.category;
-  const categoryConfig = getCategoryConfig(category);
-  const state = getViewState(view);
+    showAcademicSection(view);
+    renderFollowUpResult(view, "", false);
 
-  if (isProfessionalCategory(category)) {
-    hideAISection(view);
-    return;
-  }
+    if (cachedInterpretation) {
+      renderCacheNotice(view, true);
+      renderAcademicResult(view, cachedInterpretation);
+      view.querySelector(".academic-section").scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+      return;
+    }
 
-  if (!state.baziData) {
-    renderAIResult("请先排定命盘", view, true);
-    return;
-  }
+    renderCacheNotice(view, false);
+    updateRitualStatus(view, true);
+    setAcademicOutput(view, "summary", "正在排演命理盘局...");
+    setAcademicOutput(view, "positions", "接入人生中...");
 
-  updateAIButtonState(view, true);
-  updateRitualStatus(view, true);
-  renderAIResult(categoryConfig.aiLoadingText, view);
-
-  try {
     const [interpretationResult] = await Promise.allSettled([
-      fetchAIInterpretation(state.baziData, category),
+      fetchAIInterpretation(baziData, category, { mode: "initial" }),
       wait(RITUAL_LOADING_MS)
     ]);
 
@@ -1058,18 +1502,67 @@ async function handleAIButtonClick(event) {
       throw interpretationResult.reason;
     }
 
-    renderAIResult(interpretationResult.value, view);
+    writeDossierCache(cacheKey, interpretationResult.value);
+    renderAcademicResult(view, interpretationResult.value);
+    view.querySelector(".academic-section").scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
   } catch (error) {
-    renderAIResult("网络连接失败或 API 密钥未配置", view, true);
+    state.baziData = null;
+    renderCacheNotice(view, false);
+
+    if (isProfessionalCategory(category)) {
+      renderError(error.message, view);
+    } else {
+      showAcademicSection(view);
+      renderAcademicResult(view, {
+        summary: "网络连接失败或 API 密钥未配置",
+        positions: "网络连接失败或 API 密钥未配置"
+      }, true);
+    }
   } finally {
-    updateRitualStatus(view);
-    updateAIButtonState(view);
+    updateRitualStatus(view, false);
+    setStartButtonLoading(view, false);
+  }
+}
+
+async function handleFollowUpClick(event) {
+  const view = event.currentTarget.closest(".business-view");
+  const state = getViewState(view);
+  const category = state.category || view.dataset.category;
+  const question = view.querySelector(".follow-up-input")?.value.trim() || "";
+
+  if (!state.baziData) {
+    renderFollowUpResult(view, "请先开启批算，待命盘落定后再追问。", true);
+    return;
+  }
+
+  if (!question) {
+    renderFollowUpResult(view, "请先写下一个具体追问。", true);
+    return;
+  }
+
+  setFollowUpLoading(view, true);
+  renderFollowUpResult(view, "先生正在审视命主疑惑...");
+
+  try {
+    const payload = await fetchAIInterpretation(state.baziData, category, {
+      mode: "followUp",
+      question
+    });
+
+    renderFollowUpResult(view, payload.followUp || "未能生成追问解析。");
+  } catch (error) {
+    renderFollowUpResult(view, "网络连接失败或 API 密钥未配置", true);
+  } finally {
+    setFollowUpLoading(view, false);
   }
 }
 
 document.querySelectorAll(".module-card[data-view]").forEach((moduleCard) => {
   moduleCard.addEventListener("click", () => {
-    openBusinessView(moduleCard.dataset.view);
+    openModule(moduleCard.dataset.view, moduleCard.dataset.category);
   });
 });
 
@@ -1081,6 +1574,6 @@ document.querySelectorAll(".start-button").forEach((button) => {
   button.addEventListener("click", handleStartButtonClick);
 });
 
-document.querySelectorAll(".ai-button").forEach((button) => {
-  button.addEventListener("click", handleAIButtonClick);
+document.querySelectorAll(".follow-up-button").forEach((button) => {
+  button.addEventListener("click", handleFollowUpClick);
 });
