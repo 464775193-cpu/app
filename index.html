@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>排盘助手</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <h1>排盘助手</h1>
+    </header>
+
+    <main class="app-main">
+      <section class="input-panel" aria-label="排盘条件">
+        <label class="field">
+          <span>出生时间</span>
+          <input id="birth-time" type="datetime-local" name="birthTime">
+        </label>
+
+        <div class="filter-grid">
+          <label class="field">
+            <span>性别</span>
+            <select name="gender">
+              <option value="">请选择</option>
+              <option value="male">男</option>
+              <option value="female">女</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>历法</span>
+            <select name="calendar">
+              <option value="solar">公历</option>
+              <option value="lunar">农历</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>地区</span>
+            <select name="region">
+              <option value="">出生地区</option>
+              <option value="china">中国大陆</option>
+              <option value="other">其他地区</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>算法</span>
+            <select name="method">
+              <option value="default">默认算法</option>
+              <option value="classic">传统算法</option>
+              <option value="modern">现代算法</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <section class="action-panel">
+        <button id="start-button" class="primary-button" type="button">开始排盘</button>
+
+        <div id="result-box" class="result-box" aria-label="排盘结果展示区">
+          <p>算法结果将在这里展示</p>
+        </div>
+
+        <button id="ai-button" class="ai-button" type="button" disabled>生成深度状态解析</button>
+
+        <div id="ai-result" class="ai-result" aria-live="polite">
+          深度状态解析将在这里展示
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.4/lunar.min.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
