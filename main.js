@@ -4,25 +4,58 @@ const API_KEY = "1af35aeb-7705-48e0-a667-1fbd4e1b8307";
 const API_BASE_URL = "https://ark.cn-beijing.volces.com/api/v3/bots/chat/completions";
 // 火山方舟 Bot 调用使用控制台中的 bot ID。
 const API_MODEL = "bot-20260524190425-k2lvg";
-const BASE_SYSTEM_PROMPT = "你是一位隐居世外的盲派命理大师，精通四柱八字、五行生克、十神取象与宫位气势。来者已报生辰，命盘四柱与五行已列于前。请以温润深邃的笔触写下批断，语言可带国学韵味，但须让今人读得明白。开篇只用“批注真言：”。不可露出推演之外的器械痕迹；不可用今世术语自报来处；不可空泛恐吓；不可作绝对宿命断语。末尾须给出至少三条可照做的建议。";
+
+const BASE_SYSTEM_PROMPT = [
+  "你熟稔四柱八字、五行生克与十神取象，只依据传入的命盘作当下气质与惯性分析。",
+  "严禁未来预测、运势吉凶预判、事件预言、时间点断言和宿命化表达。",
+  "严禁在正文中出现“系统”“AI”“数据模型”“接口”“算法”等科技词汇。",
+  "开篇只用“批注真言：”。全文约300字，语气温润、深邃、清醒。",
+  "必须给出至少三条可立即照做的建议，建议要具体、克制、与所问领域高度相关。"
+].join("");
+
 const CATEGORY_CONFIG = {
   "学业": {
     title: "学业分析",
-    aiDirective: "所问之事为【学业】。请加重文昌星、印星、食伤吐秀、心性定力等意象，观其悟性、专注、记忆、表达与应试节奏。至少给出三条求学、复盘、专注训练方面的可行建议。"
+    viewId: "study-view",
+    mode: "ai",
+    startText: "一键开启",
+    startLoadingText: "正在点亮文昌星位...",
+    aiLoadingText: "正在铺陈文昌批注...",
+    readyText: "命盘已定，可请文昌导师批注。",
+    aiDirective: "此刻你扮演【文昌导师】。请重点分析专注力、记忆模式、理解吸收、表达输出与性格中的学习驱动力；可借文昌、印星、食伤等意象说明，但不得引申为前途预判。"
   },
   "事业": {
     title: "事业运势",
-    aiDirective: "所问之事为【事业】。请加重官杀、财星、印绶、走运气机、贵人方位等意象，剖析其事业格局、行事风格、财运承载与适合发力之处。至少给出三条定位、协作、取势方面的可行建议。"
+    viewId: "career-view",
+    mode: "ai",
+    startText: "一键开启",
+    startLoadingText: "正在推演事业格局...",
+    aiLoadingText: "正在凝练谋略批注...",
+    readyText: "命盘已定，可请职场谋略批注。",
+    aiDirective: "此刻你扮演【职场谋略家】。禁用未来预测，只客观分析性格中的执行力与领导力平衡、协作方式、抗压节奏和资源调配习惯；建议必须落在定位、沟通、执行与复盘上。"
   },
   "婚姻": {
-    title: "婚姻走势",
-    aiDirective: "所问之事为【婚姻】。请加重夫妻宫、红鸾星、正桃花、日支气象与阴阳相济等意象，解读其亲密关系习性、表达方式、边界感与相处之道。至少给出三条沟通、择偶、修合方面的可行建议。"
+    title: "姻缘批断",
+    viewId: "marriage-view",
+    mode: "ai",
+    startText: "一键开启",
+    startLoadingText: "正在感应良缘羁绊...",
+    aiLoadingText: "正在化开情感脉络...",
+    readyText: "命盘已定，可请情感解惑批注。",
+    aiDirective: "此刻你扮演【情感解惑者】。请侧重沟通模式、情感表达特质、边界感、亲密关系中的安全感来源与五行气质剖析；不得断言婚恋事件或良缘时间。"
   },
   "专业": {
-    title: "专业排盘",
+    title: "命理精盘",
+    viewId: "chart-view",
+    mode: "tool",
+    startText: "开始排盘",
+    startLoadingText: "正在铺陈四柱精盘...",
+    aiLoadingText: "",
+    readyText: "",
     aiDirective: ""
   }
 };
+
 const PILLAR_METHODS = [
   {
     key: "year",
@@ -81,6 +114,7 @@ const PILLAR_METHODS = [
     wuXing: "getTimeWuXing"
   }
 ];
+
 const GAN_WU_XING = {
   "甲": "木",
   "乙": "木",
@@ -93,6 +127,7 @@ const GAN_WU_XING = {
   "壬": "水",
   "癸": "水"
 };
+
 const ZHI_WU_XING = {
   "寅": "木",
   "卯": "木",
@@ -107,6 +142,7 @@ const ZHI_WU_XING = {
   "亥": "水",
   "子": "水"
 };
+
 const WU_XING_COLORS = {
   "木": "#22c55e",
   "火": "#ef4444",
@@ -114,11 +150,12 @@ const WU_XING_COLORS = {
   "金": "#64748b",
   "水": "#3b82f6"
 };
-let latestBaZiData = null;
-let currentCategory = "学业";
+
 const BIRTH_TIME_PATTERN = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/;
 const STANDARD_CHART_METHOD = "通用排法";
 const RITUAL_LOADING_MS = 3000;
+const START_LOADING_MS = 520;
+
 const SHEN_SHA_DESCRIPTIONS = {
   "天乙贵人": "遇事多得助力，适合主动请教、借力成事。",
   "文昌贵人": "利于学习、表达与理解，宜用清晰框架整理思路。",
@@ -151,18 +188,39 @@ const SHEN_SHA_DESCRIPTIONS = {
   "空亡": "某处气机虚浮，宜用具体行动补足落点。"
 };
 
-function getFormData() {
-  const birthTimeInput = document.querySelector("#birth-time");
-  const birthTime = birthTimeInput.value;
+const viewState = new Map();
+let currentView = null;
+
+function getViewState(view) {
+  if (!viewState.has(view.id)) {
+    viewState.set(view.id, {
+      baziData: null
+    });
+  }
+
+  return viewState.get(view.id);
+}
+
+function getCategoryConfig(category) {
+  return CATEGORY_CONFIG[category] || CATEGORY_CONFIG["学业"];
+}
+
+function isProfessionalCategory(category) {
+  return category === "专业";
+}
+
+function getFormData(view) {
+  const birthTimeInput = view.querySelector(".birth-time");
+  const birthTime = birthTimeInput?.value || "";
 
   if (!birthTime) {
-    throw new Error("请先选择出生时间");
+    throw new Error("请先选择诞生良辰");
   }
 
   const match = birthTime.match(BIRTH_TIME_PATTERN);
 
   if (!match) {
-    throw new Error("出生时间格式不正确，请使用 YYYY-MM-DD HH:mm");
+    throw new Error("诞生良辰格式不正确，请使用 YYYY-MM-DD HH:mm");
   }
 
   const [, year, month, day, hour, minute, second = "0"] = match;
@@ -240,10 +298,6 @@ function uniqueList(list) {
 
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function isProfessionalCategory(category = currentCategory) {
-  return category === "专业";
 }
 
 function getElementOf(char) {
@@ -479,11 +533,63 @@ function calculateBaZi(formData) {
   };
 }
 
-function renderBaZi(baziData) {
-  const chartSection = document.querySelector("#chart-section");
-  const resultBox = document.querySelector("#result-box");
+function openBusinessView(viewId) {
+  const targetView = document.querySelector(`#${viewId}`);
+  const homeView = document.querySelector("#home-view");
+
+  if (!targetView || !homeView) {
+    return;
+  }
+
+  currentView = targetView;
+  homeView.classList.remove("is-active");
+  homeView.hidden = true;
+  document.querySelectorAll(".business-view").forEach((view) => {
+    const isTarget = view === targetView;
+
+    view.hidden = !isTarget;
+    view.classList.toggle("is-active", isTarget);
+  });
+
+  updateAIButtonState(targetView);
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+}
+
+function backToHome() {
+  const homeView = document.querySelector("#home-view");
+
+  currentView = null;
+  document.querySelectorAll(".business-view").forEach((view) => {
+    view.classList.remove("is-active");
+    view.hidden = true;
+  });
+  homeView.hidden = false;
+  requestAnimationFrame(() => homeView.classList.add("is-active"));
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+}
+
+function renderBaZi(baziData, view, options = {}) {
+  const chartSection = view.querySelector(".chart-section");
+  const resultBox = view.querySelector(".result-box");
+  const category = view.dataset.category;
+  const isCompact = options.compact ?? !isProfessionalCategory(category);
   const pillars = baziData.pillars;
-  const rows = [
+
+  chartSection.classList.remove("is-empty");
+  resultBox.classList.add("has-result");
+
+  if (isCompact) {
+    resultBox.innerHTML = renderMiniPillarCards(pillars);
+    return;
+  }
+
+  const fullRows = [
     {
       label: "主星",
       render: (pillar) => `<span class="ten-god">${escapeHTML(pillar.shiShenGan)}</span>`
@@ -524,15 +630,13 @@ function renderBaZi(baziData) {
   const headerCells = pillars.map((pillar) => `
     <div class="bazi-table-head">${escapeHTML(pillar.label)}</div>
   `).join("");
-  const bodyRows = rows.map((row) => `
+  const bodyRows = fullRows.map((row) => `
     <div class="bazi-table-label">${row.label}</div>
     ${pillars.map((pillar) => `
       <div class="bazi-table-cell">${row.render(pillar)}</div>
     `).join("")}
   `).join("");
 
-  chartSection.classList.remove("is-empty");
-  resultBox.classList.add("has-result");
   resultBox.innerHTML = `
     <div class="bazi-result-stack">
       ${renderWuXingOverview(baziData.wuXingStats)}
@@ -543,7 +647,24 @@ function renderBaZi(baziData) {
       </div>
     </div>
   `;
-  renderShenShaDetails(baziData);
+  renderShenShaDetails(baziData, view);
+}
+
+function renderMiniPillarCards(pillars) {
+  return `
+    <div class="mini-pillar-grid" aria-label="天干地支四柱简盘">
+      ${pillars.map((pillar) => `
+        <article class="mini-pillar-card">
+          <span class="mini-pillar-label">${escapeHTML(pillar.label)}</span>
+          <div class="mini-gan-zhi">
+            ${renderElementText([pillar.gan], "mini-stem")}
+            ${renderElementText([pillar.zhi], "mini-branch")}
+          </div>
+          <span class="mini-element-note">${escapeHTML(getElementOf(pillar.gan) || "-")} / ${escapeHTML(getElementOf(pillar.zhi) || "-")}</span>
+        </article>
+      `).join("")}
+    </div>
+  `;
 }
 
 function escapeHTML(value) {
@@ -591,12 +712,16 @@ function renderWuXingOverview(stats) {
   `;
 }
 
-function renderShenShaDetails(baziData) {
-  const chartSection = document.querySelector("#chart-section");
-  const shenShaBox = document.querySelector("#shen-sha-box");
+function renderShenShaDetails(baziData, view) {
+  const chartSection = view.querySelector(".chart-section");
+  const shenShaBox = view.querySelector(".shen-sha-box");
   const allShenSha = baziData.allShenSha || [];
 
   chartSection.classList.remove("is-empty");
+
+  if (!shenShaBox) {
+    return;
+  }
 
   if (!allShenSha.length) {
     shenShaBox.classList.remove("has-result");
@@ -636,9 +761,13 @@ function renderTagList(items, size = "") {
   `;
 }
 
-function renderAIResult(message, isError = false) {
-  const aiSection = document.querySelector("#ai-section");
-  const aiResult = document.querySelector("#ai-result");
+function renderAIResult(message, view, isError = false) {
+  const aiSection = view.querySelector(".ai-section");
+  const aiResult = view.querySelector(".ai-result");
+
+  if (!aiSection || !aiResult) {
+    return;
+  }
 
   aiSection.classList.remove("is-empty");
   aiResult.classList.remove("is-visible", "is-error", "has-ink-lines");
@@ -647,6 +776,7 @@ function renderAIResult(message, isError = false) {
 
   if (isError) {
     const content = document.createElement("span");
+
     content.className = "ai-error-text";
     content.textContent = message;
     aiResult.append(content);
@@ -654,6 +784,7 @@ function renderAIResult(message, isError = false) {
     aiResult.classList.add("has-ink-lines");
 
     const title = document.createElement("h3");
+
     title.textContent = "批注真言";
     aiResult.append(title);
 
@@ -687,91 +818,75 @@ function getInkLines(message) {
     .filter(Boolean);
 }
 
-function renderError(message) {
-  const chartSection = document.querySelector("#chart-section");
-  const aiSection = document.querySelector("#ai-section");
-  const resultBox = document.querySelector("#result-box");
-  const shenShaBox = document.querySelector("#shen-sha-box");
+function renderError(message, view) {
+  const chartSection = view.querySelector(".chart-section");
+  const resultBox = view.querySelector(".result-box");
+  const shenShaBox = view.querySelector(".shen-sha-box");
 
   chartSection.classList.remove("is-empty");
-  aiSection.classList.add("is-empty");
   resultBox.classList.remove("has-result");
   resultBox.innerHTML = `<p class="result-error">${escapeHTML(message)}</p>`;
-  shenShaBox.classList.remove("has-result");
-  shenShaBox.innerHTML = "";
+  if (shenShaBox) {
+    shenShaBox.classList.remove("has-result");
+    shenShaBox.innerHTML = "";
+  }
+  hideAISection(view);
 }
 
-function updateAIButtonState(isLoading = false) {
-  const aiButton = document.querySelector("#ai-button");
+function setStartButtonLoading(view, isLoading = false) {
+  const button = view.querySelector(".start-button");
+  const categoryConfig = getCategoryConfig(view.dataset.category);
 
-  aiButton.disabled = isLoading || !latestBaZiData || isProfessionalCategory();
+  if (!button) {
+    return;
+  }
+
+  button.disabled = isLoading;
+  button.classList.toggle("is-loading", isLoading);
+  button.textContent = isLoading ? categoryConfig.startLoadingText : categoryConfig.startText;
+}
+
+function updateAIButtonState(view, isLoading = false) {
+  const aiButton = view?.querySelector(".ai-button");
+  const category = view?.dataset.category;
+  const categoryConfig = getCategoryConfig(category);
+  const state = view ? getViewState(view) : { baziData: null };
+
+  if (!aiButton) {
+    return;
+  }
+
+  aiButton.disabled = isLoading || !state.baziData || isProfessionalCategory(category);
   aiButton.classList.toggle("is-loading", isLoading);
-  aiButton.textContent = isLoading ? "正在排演命理盘局..." : "揭示命运玄机";
+  aiButton.textContent = isLoading ? categoryConfig.aiLoadingText : "揭示命运玄机";
 }
 
-function updateRitualStatus(isVisible = false) {
-  const ritualStatus = document.querySelector("#ritual-status");
+function updateRitualStatus(view, isVisible = false) {
+  const ritualStatus = view.querySelector(".ritual-status");
+
+  if (!ritualStatus) {
+    return;
+  }
 
   ritualStatus.classList.toggle("is-visible", isVisible);
 }
 
-function hideAISection() {
-  const aiSection = document.querySelector("#ai-section");
-  const aiResult = document.querySelector("#ai-result");
+function hideAISection(view) {
+  const aiSection = view.querySelector(".ai-section");
+  const aiResult = view.querySelector(".ai-result");
 
-  updateRitualStatus();
-  aiSection.classList.add("is-empty");
-  aiResult.classList.remove("is-visible", "is-error", "has-ink-lines");
-  aiResult.innerHTML = "";
-  updateAIButtonState();
-}
-
-function resetAnalysisOutput() {
-  const chartSection = document.querySelector("#chart-section");
-  const aiSection = document.querySelector("#ai-section");
-  const resultBox = document.querySelector("#result-box");
-  const shenShaBox = document.querySelector("#shen-sha-box");
-  const aiResult = document.querySelector("#ai-result");
-
-  latestBaZiData = null;
-  chartSection.classList.add("is-empty");
-  aiSection.classList.add("is-empty");
-  resultBox.classList.remove("has-result");
-  resultBox.innerHTML = "";
-  shenShaBox.classList.remove("has-result");
-  shenShaBox.innerHTML = "";
-  aiResult.classList.remove("is-visible", "is-error", "has-ink-lines");
-  aiResult.innerHTML = "";
-  updateRitualStatus();
-  updateAIButtonState();
-}
-
-function selectCategory(category) {
-  const categoryConfig = CATEGORY_CONFIG[category];
-
-  if (!categoryConfig) {
+  if (!aiSection || !aiResult) {
     return;
   }
 
-  currentCategory = category;
-  document.body.classList.toggle("is-professional-mode", isProfessionalCategory(category));
-  document.querySelector("#detail-title").textContent = categoryConfig.title;
-  document.querySelectorAll(".module-card[data-category]").forEach((moduleCard) => {
-    const isSelected = moduleCard.dataset.category === category;
-
-    moduleCard.classList.toggle("is-selected", isSelected);
-    moduleCard.setAttribute("aria-pressed", String(isSelected));
-  });
-
-  if (isProfessionalCategory(category)) {
-    hideAISection();
-  } else if (latestBaZiData) {
-    renderAIResult(`${categoryConfig.title}已就位，可请先生批注。`);
-    updateAIButtonState();
-  }
+  updateRitualStatus(view);
+  aiSection.classList.add("is-empty");
+  aiResult.classList.remove("is-visible", "is-error", "has-ink-lines");
+  aiResult.innerHTML = "";
+  updateAIButtonState(view);
 }
 
-function buildAIUserPrompt(baziData) {
+function buildAIUserPrompt(baziData, category) {
   const pillarText = baziData.pillars.map((pillar) => [
     `${pillar.label}:${pillar.ganZhi}`,
     `主星:${pillar.shiShenGan}`,
@@ -792,6 +907,7 @@ function buildAIUserPrompt(baziData) {
     .join("，") || "无";
 
   return [
+    `当前所问领域：${category}`,
     "四柱精盘：",
     pillarText,
     `五行排布：${baziData.wuXingList.join("，")}`,
@@ -839,7 +955,7 @@ async function fetchAIInterpretation(baziData, category) {
         },
         {
           role: "user",
-          content: buildAIUserPrompt(baziData)
+          content: buildAIUserPrompt(baziData, category)
         }
       ],
       temperature: 0.3,
@@ -849,6 +965,7 @@ async function fetchAIInterpretation(baziData, category) {
 
   if (!response.ok) {
     const errorText = await response.text();
+
     console.error("批注请求失败", {
       status: response.status,
       statusText: response.statusText,
@@ -872,50 +989,68 @@ async function fetchAIInterpretation(baziData, category) {
   return content;
 }
 
-function handleStartButtonClick() {
+async function handleStartButtonClick(event) {
+  const view = event.currentTarget.closest(".business-view");
+  const category = view.dataset.category;
+  const categoryConfig = getCategoryConfig(category);
+  const state = getViewState(view);
+
   try {
-    const formData = getFormData();
+    const formData = getFormData(view);
+
+    setStartButtonLoading(view, true);
+    await wait(START_LOADING_MS);
+
     const baziData = calculateBaZi(formData);
 
-    latestBaZiData = baziData;
-    renderBaZi(baziData);
+    state.baziData = baziData;
+    renderBaZi(baziData, view, {
+      compact: !isProfessionalCategory(category)
+    });
 
-    if (isProfessionalCategory()) {
-      hideAISection();
+    if (isProfessionalCategory(category)) {
+      hideAISection(view);
     } else {
-      renderAIResult("命盘已定，可启玄机。");
-      updateAIButtonState();
+      renderAIResult(categoryConfig.readyText, view);
+      updateAIButtonState(view);
     }
 
-    document.querySelector("#chart-section").scrollIntoView({
+    view.querySelector(".chart-section").scrollIntoView({
       behavior: "smooth",
       block: "start"
     });
   } catch (error) {
-    latestBaZiData = null;
-    renderError(error.message);
-    updateAIButtonState();
+    state.baziData = null;
+    renderError(error.message, view);
+    updateAIButtonState(view);
+  } finally {
+    setStartButtonLoading(view, false);
   }
 }
 
-async function handleAIButtonClick() {
-  if (isProfessionalCategory()) {
-    hideAISection();
+async function handleAIButtonClick(event) {
+  const view = event.currentTarget.closest(".business-view");
+  const category = view.dataset.category;
+  const categoryConfig = getCategoryConfig(category);
+  const state = getViewState(view);
+
+  if (isProfessionalCategory(category)) {
+    hideAISection(view);
     return;
   }
 
-  if (!latestBaZiData) {
-    renderAIResult("请先排定命盘", true);
+  if (!state.baziData) {
+    renderAIResult("请先排定命盘", view, true);
     return;
   }
 
-  updateAIButtonState(true);
-  updateRitualStatus(true);
-  renderAIResult("正在排演命理盘局...");
+  updateAIButtonState(view, true);
+  updateRitualStatus(view, true);
+  renderAIResult(categoryConfig.aiLoadingText, view);
 
   try {
     const [interpretationResult] = await Promise.allSettled([
-      fetchAIInterpretation(latestBaZiData, currentCategory),
+      fetchAIInterpretation(state.baziData, category),
       wait(RITUAL_LOADING_MS)
     ]);
 
@@ -923,21 +1058,29 @@ async function handleAIButtonClick() {
       throw interpretationResult.reason;
     }
 
-    renderAIResult(interpretationResult.value);
+    renderAIResult(interpretationResult.value, view);
   } catch (error) {
-    renderAIResult("命盘暂未通达，请稍后再试", true);
+    renderAIResult("网络连接失败或 API 密钥未配置", view, true);
   } finally {
-    updateRitualStatus();
-    updateAIButtonState();
+    updateRitualStatus(view);
+    updateAIButtonState(view);
   }
 }
 
-document.querySelectorAll(".module-card[data-category]").forEach((moduleCard) => {
+document.querySelectorAll(".module-card[data-view]").forEach((moduleCard) => {
   moduleCard.addEventListener("click", () => {
-    selectCategory(moduleCard.dataset.category);
+    openBusinessView(moduleCard.dataset.view);
   });
 });
 
-selectCategory(currentCategory);
-document.querySelector("#start-button").addEventListener("click", handleStartButtonClick);
-document.querySelector("#ai-button").addEventListener("click", handleAIButtonClick);
+document.querySelectorAll(".back-button").forEach((button) => {
+  button.addEventListener("click", backToHome);
+});
+
+document.querySelectorAll(".start-button").forEach((button) => {
+  button.addEventListener("click", handleStartButtonClick);
+});
+
+document.querySelectorAll(".ai-button").forEach((button) => {
+  button.addEventListener("click", handleAIButtonClick);
+});
