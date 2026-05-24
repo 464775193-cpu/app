@@ -4,19 +4,19 @@ const API_KEY = "1af35aeb-7705-48e0-a667-1fbd4e1b8307";
 const API_BASE_URL = "https://ark.cn-beijing.volces.com/api/v3/bots/chat/completions";
 // 火山方舟 Bot 调用使用控制台中的 bot ID。
 const API_MODEL = "bot-20260524190425-k2lvg";
-const BASE_SYSTEM_PROMPT = "你是一位隐居世外、精通四柱八字与盲派心法的国学命理先生。来者已报生辰，命盘四柱与五行已列于前。请循天干地支、五行生克、十神取象与宫位气势，写一段约 300 字的批注。语气须深邃、温和、有传统国学韵味，可用半文言词句，但要让人读得明白。开篇用“先生批注：”或“【所问之事】批断真言”。不可用生硬标题，不可露出推演之外的器械痕迹。";
+const BASE_SYSTEM_PROMPT = "你是一位隐居世外的盲派命理大师，精通四柱八字、五行生克、十神取象与宫位气势。来者已报生辰，命盘四柱与五行已列于前。请以温润深邃的笔触写下批断，语言可带国学韵味，但须让今人读得明白。开篇只用“批注真言：”。不可露出推演之外的器械痕迹；不可用今世术语自报来处；不可空泛恐吓；不可作绝对宿命断语。末尾须给出至少三条可照做的建议。";
 const CATEGORY_CONFIG = {
   "学业": {
     title: "学业分析",
-    aiDirective: "所问之事为【学业】。请以文昌星、印星、食伤吐秀、心性定力等意象入手，观其求学之路的顺逆、悟性、专注与应试节奏，并给出合乎命局气势的修习建议。"
+    aiDirective: "所问之事为【学业】。请加重文昌星、印星、食伤吐秀、心性定力等意象，观其悟性、专注、记忆、表达与应试节奏。至少给出三条求学、复盘、专注训练方面的可行建议。"
   },
   "事业": {
     title: "事业运势",
-    aiDirective: "所问之事为【事业】。请以官杀、财星、印绶、走运气机与贵人方位等意象入手，剖析其事业格局、行事风格、财运承载与适合发力之处，并给出落地可行的取势建议。"
+    aiDirective: "所问之事为【事业】。请加重官杀、财星、印绶、走运气机、贵人方位等意象，剖析其事业格局、行事风格、财运承载与适合发力之处。至少给出三条定位、协作、取势方面的可行建议。"
   },
   "婚姻": {
     title: "婚姻走势",
-    aiDirective: "所问之事为【婚姻】。请以夫妻宫、红鸾星、正桃花、日支气象与阴阳相济等意象入手，解读其姻缘羁绊、情感习性、良缘时机与相处之道，并给出温和可行的修合建议。"
+    aiDirective: "所问之事为【婚姻】。请加重夫妻宫、红鸾星、正桃花、日支气象与阴阳相济等意象，解读其亲密关系习性、表达方式、边界感与相处之道。至少给出三条沟通、择偶、修合方面的可行建议。"
   }
 };
 const PILLAR_METHODS = [
@@ -107,13 +107,45 @@ const WU_XING_COLORS = {
   "木": "#22c55e",
   "火": "#ef4444",
   "土": "#d97706",
-  "金": "#eab308",
+  "金": "#64748b",
   "水": "#3b82f6"
 };
 let latestBaZiData = null;
 let currentCategory = "学业";
 const BIRTH_TIME_PATTERN = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/;
 const STANDARD_CHART_METHOD = "通用排法";
+const RITUAL_LOADING_MS = 3000;
+const SHEN_SHA_DESCRIPTIONS = {
+  "天乙贵人": "遇事多得助力，适合主动请教、借力成事。",
+  "文昌贵人": "利于学习、表达与理解，宜用清晰框架整理思路。",
+  "文昌星": "主才思与文气，适合读写、考试、表达型事务。",
+  "桃花": "人缘与吸引力较显，也需留意情绪边界。",
+  "红鸾": "主情感牵引与亲密互动，宜真诚表达心意。",
+  "驿马": "主移动、变化与外部机会，适合主动拓宽场域。",
+  "华盖": "主审美、思辨与独处气质，宜深耕专业与创作。",
+  "将星": "主掌控与组织力，适合承担协调、管理事务。",
+  "禄神": "主承载与资源，宜稳扎稳打积累可复用能力。",
+  "日主坐命": "自我意识清楚，遇事宜先稳住自身节奏。",
+  "天德": "温厚化解之象，行事以善意与分寸见长。",
+  "月德": "人情调和之象，利于缓和关系与积累口碑。",
+  "天德贵人": "逢难有缓，宜以正直、克制、耐心化解阻滞。",
+  "月德贵人": "处事多有回旋余地，适合用温和方式推进。",
+  "天德合": "善缘易聚，适合修复关系与共同协作。",
+  "月德合": "人际协调力较佳，宜多做连接与承接。",
+  "三合": "同频助力较强，适合结盟、共创、长期合作。",
+  "六合": "关系黏合度高，宜以稳定承诺建立信任。",
+  "太极贵人": "悟性与抽象理解较强，适合研究复杂体系。",
+  "福星贵人": "心性较有福厚之气，宜珍惜稳定资源。",
+  "国印贵人": "利于规则、资质与信用，适合走规范路径。",
+  "童子": "气质敏感，宜重视身心节律与情绪安顿。",
+  "亡神": "心思深潜，宜避免过度内耗，专注可控事项。",
+  "劫煞": "行动易急，宜先定边界再推进。",
+  "灾煞": "易遇琐碎牵制，宜保留余量、降低冒进。",
+  "孤辰": "独立性强，宜主动经营稳定连接。",
+  "寡宿": "情感表达偏收，宜练习坦诚沟通。",
+  "羊刃": "气势刚烈，宜把锋芒化为纪律与执行。",
+  "空亡": "某处气机虚浮，宜用具体行动补足落点。"
+};
 
 function getFormData() {
   const birthTimeInput = document.querySelector("#birth-time");
@@ -202,6 +234,10 @@ function uniqueList(list) {
   return [...new Set(list.filter((item) => item && item !== "无"))];
 }
 
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function getElementOf(char) {
   return GAN_WU_XING[char] || ZHI_WU_XING[char] || "";
 }
@@ -210,6 +246,56 @@ function getElementColor(char) {
   const element = getElementOf(char);
 
   return WU_XING_COLORS[element] || "#334155";
+}
+
+function getWuXingStats(pillars) {
+  const elements = ["木", "火", "土", "金", "水"];
+  const counts = Object.fromEntries(elements.map((element) => [element, 0]));
+
+  pillars.forEach((pillar) => {
+    [pillar.gan, pillar.zhi, ...pillar.hideGan].forEach((char) => {
+      const element = getElementOf(char);
+
+      if (element) {
+        counts[element] += 1;
+      }
+    });
+  });
+
+  const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
+
+  return elements.map((element) => ({
+    element,
+    count: counts[element],
+    percent: total ? Math.round((counts[element] / total) * 100) : 0,
+    color: WU_XING_COLORS[element]
+  }));
+}
+
+function getAllShenSha(pillars) {
+  const shenShaMap = new Map();
+
+  pillars.forEach((pillar) => {
+    pillar.shenSha.forEach((name) => {
+      if (!shenShaMap.has(name)) {
+        shenShaMap.set(name, {
+          name,
+          sources: []
+        });
+      }
+
+      shenShaMap.get(name).sources.push(pillar.label);
+    });
+  });
+
+  return [...shenShaMap.values()].map((item) => ({
+    ...item,
+    sources: uniqueList(item.sources)
+  }));
+}
+
+function getShenShaDescription(name) {
+  return SHEN_SHA_DESCRIPTIONS[name] || "命盘中显现的辅助星曜，可结合所在四柱观察其作用。";
 }
 
 function getCommonShenSha(eightChar, targetGan, targetZhi) {
@@ -378,12 +464,15 @@ function calculateBaZi(formData) {
   return {
     chartMethod,
     pillars,
+    wuXingStats: getWuXingStats(pillars),
+    allShenSha: getAllShenSha(pillars),
     ganZhiList: pillars.map((pillar) => pillar.ganZhi),
     wuXingList: pillars.map((pillar) => pillar.wuXing)
   };
 }
 
 function renderBaZi(baziData) {
+  const chartSection = document.querySelector("#chart-section");
   const resultBox = document.querySelector("#result-box");
   const pillars = baziData.pillars;
   const rows = [
@@ -434,14 +523,19 @@ function renderBaZi(baziData) {
     `).join("")}
   `).join("");
 
+  chartSection.classList.remove("is-empty");
   resultBox.classList.add("has-result");
   resultBox.innerHTML = `
-    <div class="bazi-pro-table" role="table" aria-label="四柱八字精盘">
-      <div class="bazi-table-corner">四柱</div>
-      ${headerCells}
-      ${bodyRows}
+    <div class="bazi-result-stack">
+      ${renderWuXingOverview(baziData.wuXingStats)}
+      <div class="bazi-pro-table" role="table" aria-label="四柱八字精盘">
+        <div class="bazi-table-corner">四柱</div>
+        ${headerCells}
+        ${bodyRows}
+      </div>
     </div>
   `;
+  renderShenShaDetails(baziData);
 }
 
 function escapeHTML(value) {
@@ -459,6 +553,67 @@ function renderElementText(chars, className = "") {
   `).join("");
 }
 
+function renderWuXingOverview(stats) {
+  let start = 0;
+  const gradientParts = stats.map((item) => {
+    const end = start + item.percent;
+    const part = `${item.color} ${start}% ${end}%`;
+
+    start = end;
+
+    return part;
+  });
+  const conicGradient = gradientParts.some((part) => !part.includes(" 0% 0%"))
+    ? `conic-gradient(${gradientParts.join(", ")})`
+    : "linear-gradient(180deg, #eef4ef, #f8fbf7)";
+
+  return `
+    <div class="energy-panel" aria-label="五行占比">
+      <div class="energy-orb" style="background: ${conicGradient}"></div>
+      <div class="energy-list">
+        ${stats.map((item) => `
+          <div class="energy-item">
+            <span class="energy-dot" style="background: ${item.color}"></span>
+            <span>${item.element}</span>
+            <strong>${item.percent}%</strong>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderShenShaDetails(baziData) {
+  const chartSection = document.querySelector("#chart-section");
+  const shenShaBox = document.querySelector("#shen-sha-box");
+  const allShenSha = baziData.allShenSha || [];
+
+  chartSection.classList.remove("is-empty");
+
+  if (!allShenSha.length) {
+    shenShaBox.classList.remove("has-result");
+    shenShaBox.innerHTML = "<p>此盘神煞较少，宜重看五行与十神本气。</p>";
+    return;
+  }
+
+  shenShaBox.classList.add("has-result");
+  shenShaBox.innerHTML = `
+    <div class="shen-sha-heading">
+      <span>方案A</span>
+      <h4>众星罗列</h4>
+    </div>
+    <div class="shen-sha-list">
+      ${allShenSha.map((item) => `
+        <article class="shen-sha-item">
+          <strong>${escapeHTML(item.name)}</strong>
+          <em>${escapeHTML(item.sources.join(" / "))}</em>
+          <span>${escapeHTML(getShenShaDescription(item.name))}</span>
+        </article>
+      `).join("")}
+    </div>
+  `;
+}
+
 function renderTagList(items, size = "") {
   const list = normalizeList(items);
 
@@ -474,27 +629,68 @@ function renderTagList(items, size = "") {
 }
 
 function renderAIResult(message, isError = false) {
+  const aiSection = document.querySelector("#ai-section");
   const aiResult = document.querySelector("#ai-result");
 
-  aiResult.classList.remove("is-visible", "is-error");
+  aiSection.classList.remove("is-empty");
+  aiResult.classList.remove("is-visible", "is-error", "has-ink-lines");
   aiResult.classList.toggle("is-error", isError);
   aiResult.innerHTML = "";
 
-  const content = document.createElement("span");
-  content.className = isError ? "ai-error-text" : "";
-  content.textContent = message;
-  aiResult.append(content);
+  if (isError) {
+    const content = document.createElement("span");
+    content.className = "ai-error-text";
+    content.textContent = message;
+    aiResult.append(content);
+  } else {
+    aiResult.classList.add("has-ink-lines");
+
+    const title = document.createElement("h3");
+    title.textContent = "批注真言";
+    aiResult.append(title);
+
+    getInkLines(message).forEach((line, index) => {
+      const lineNode = document.createElement("span");
+
+      lineNode.className = "ink-line";
+      lineNode.style.animationDelay = `${index * 130}ms`;
+      lineNode.textContent = line;
+      aiResult.append(lineNode);
+    });
+  }
 
   setTimeout(() => {
     aiResult.classList.add("is-visible");
   }, 0);
 }
 
-function renderError(message) {
-  const resultBox = document.querySelector("#result-box");
+function getInkLines(message) {
+  const text = String(message || "").trim();
 
+  if (!text) {
+    return ["批注将在此显现。"];
+  }
+
+  return text
+    .replace(/^批注真言[:：]\s*/, "")
+    .split(/\n+/)
+    .flatMap((paragraph) => paragraph.match(/[^。；！？]+[。；！？]?/g) || [paragraph])
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function renderError(message) {
+  const chartSection = document.querySelector("#chart-section");
+  const aiSection = document.querySelector("#ai-section");
+  const resultBox = document.querySelector("#result-box");
+  const shenShaBox = document.querySelector("#shen-sha-box");
+
+  chartSection.classList.remove("is-empty");
+  aiSection.classList.add("is-empty");
   resultBox.classList.remove("has-result");
-  resultBox.innerHTML = `<p class="result-error">${message}</p>`;
+  resultBox.innerHTML = `<p class="result-error">${escapeHTML(message)}</p>`;
+  shenShaBox.classList.remove("has-result");
+  shenShaBox.innerHTML = "";
 }
 
 function updateAIButtonState(isLoading = false) {
@@ -505,23 +701,33 @@ function updateAIButtonState(isLoading = false) {
   aiButton.textContent = isLoading ? "正在排演命理盘局..." : "揭示命运玄机";
 }
 
-function switchView(targetViewId) {
-  document.querySelectorAll(".view").forEach((view) => {
-    view.classList.toggle("is-active", view.id === targetViewId);
-  });
+function updateRitualStatus(isVisible = false) {
+  const ritualStatus = document.querySelector("#ritual-status");
+
+  ritualStatus.classList.toggle("is-visible", isVisible);
 }
 
 function resetAnalysisOutput() {
+  const chartSection = document.querySelector("#chart-section");
+  const aiSection = document.querySelector("#ai-section");
   const resultBox = document.querySelector("#result-box");
+  const shenShaBox = document.querySelector("#shen-sha-box");
+  const aiResult = document.querySelector("#ai-result");
 
   latestBaZiData = null;
+  chartSection.classList.add("is-empty");
+  aiSection.classList.add("is-empty");
   resultBox.classList.remove("has-result");
-  resultBox.innerHTML = "<p>命盘将在此呈现</p>";
-  renderAIResult("先生批注将在此显现");
+  resultBox.innerHTML = "";
+  shenShaBox.classList.remove("has-result");
+  shenShaBox.innerHTML = "";
+  aiResult.classList.remove("is-visible", "is-error", "has-ink-lines");
+  aiResult.innerHTML = "";
+  updateRitualStatus();
   updateAIButtonState();
 }
 
-function openCategory(category) {
+function selectCategory(category) {
   const categoryConfig = CATEGORY_CONFIG[category];
 
   if (!categoryConfig) {
@@ -530,12 +736,17 @@ function openCategory(category) {
 
   currentCategory = category;
   document.querySelector("#detail-title").textContent = categoryConfig.title;
-  resetAnalysisOutput();
-  switchView("detail-view");
-}
+  document.querySelectorAll(".module-card[data-category]").forEach((moduleCard) => {
+    const isSelected = moduleCard.dataset.category === category;
 
-function backToHome() {
-  switchView("home-view");
+    moduleCard.classList.toggle("is-selected", isSelected);
+    moduleCard.setAttribute("aria-pressed", String(isSelected));
+  });
+
+  if (latestBaZiData) {
+    renderAIResult(`${categoryConfig.title}已就位，可请先生批注。`);
+    updateAIButtonState();
+  }
 }
 
 function buildAIUserPrompt(baziData) {
@@ -551,11 +762,19 @@ function buildAIUserPrompt(baziData) {
     `纳音:${pillar.naYin}`,
     `神煞:${pillar.shenSha.join("/") || "无"}`
   ].join("，")).join("\n");
+  const wuXingText = baziData.wuXingStats
+    .map((item) => `${item.element}:${item.percent}%`)
+    .join("，");
+  const shenShaText = (baziData.allShenSha || [])
+    .map((item) => `${item.name}（${item.sources.join("/")}）`)
+    .join("，") || "无";
 
   return [
     "四柱精盘：",
     pillarText,
     `五行排布：${baziData.wuXingList.join("，")}`,
+    `五行占比：${wuXingText}`,
+    `众星罗列：${shenShaText}`,
     "请以此命盘为准，勿另造生辰。"
   ].join("\n");
 }
@@ -640,10 +859,13 @@ function handleStartButtonClick() {
     renderBaZi(baziData);
     renderAIResult("命盘已定，可启玄机。");
     updateAIButtonState();
+    document.querySelector("#chart-section").scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
   } catch (error) {
     latestBaZiData = null;
     renderError(error.message);
-    renderAIResult("请先排定命盘");
     updateAIButtonState();
   }
 }
@@ -655,26 +877,34 @@ async function handleAIButtonClick() {
   }
 
   updateAIButtonState(true);
+  updateRitualStatus(true);
   renderAIResult("正在排演命理盘局...");
-  await new Promise((resolve) => setTimeout(resolve, 120));
 
   try {
-    const content = await fetchAIInterpretation(latestBaZiData, currentCategory);
+    const [interpretationResult] = await Promise.allSettled([
+      fetchAIInterpretation(latestBaZiData, currentCategory),
+      wait(RITUAL_LOADING_MS)
+    ]);
 
-    renderAIResult(content);
+    if (interpretationResult.status === "rejected") {
+      throw interpretationResult.reason;
+    }
+
+    renderAIResult(interpretationResult.value);
   } catch (error) {
     renderAIResult("命盘暂未通达，请稍后再试", true);
   } finally {
+    updateRitualStatus();
     updateAIButtonState();
   }
 }
 
 document.querySelectorAll(".module-card[data-category]").forEach((moduleCard) => {
   moduleCard.addEventListener("click", () => {
-    openCategory(moduleCard.dataset.category);
+    selectCategory(moduleCard.dataset.category);
   });
 });
 
-document.querySelector("#back-button").addEventListener("click", backToHome);
+selectCategory(currentCategory);
 document.querySelector("#start-button").addEventListener("click", handleStartButtonClick);
 document.querySelector("#ai-button").addEventListener("click", handleAIButtonClick);
