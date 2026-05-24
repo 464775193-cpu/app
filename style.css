@@ -241,6 +241,20 @@ button {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
 }
 
+body.is-professional-mode .consultation-strip,
+body.is-professional-mode .optional-field {
+  display: none;
+}
+
+body.is-professional-mode .filter-grid {
+  grid-template-columns: 1fr;
+}
+
+body.is-professional-mode .input-panel {
+  background:
+    linear-gradient(180deg, rgba(162, 199, 180, 0.12), rgba(255, 253, 248, 0.88));
+}
+
 .input-panel,
 .chart-section,
 .ai-section {

@@ -17,6 +17,10 @@ const CATEGORY_CONFIG = {
   "婚姻": {
     title: "婚姻走势",
     aiDirective: "所问之事为【婚姻】。请加重夫妻宫、红鸾星、正桃花、日支气象与阴阳相济等意象，解读其亲密关系习性、表达方式、边界感与相处之道。至少给出三条沟通、择偶、修合方面的可行建议。"
+  },
+  "专业": {
+    title: "专业排盘",
+    aiDirective: ""
   }
 };
 const PILLAR_METHODS = [
@@ -236,6 +240,10 @@ function uniqueList(list) {
 
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isProfessionalCategory(category = currentCategory) {
+  return category === "专业";
 }
 
 function getElementOf(char) {
@@ -696,7 +704,7 @@ function renderError(message) {
 function updateAIButtonState(isLoading = false) {
   const aiButton = document.querySelector("#ai-button");
 
-  aiButton.disabled = isLoading || !latestBaZiData;
+  aiButton.disabled = isLoading || !latestBaZiData || isProfessionalCategory();
   aiButton.classList.toggle("is-loading", isLoading);
   aiButton.textContent = isLoading ? "正在排演命理盘局..." : "揭示命运玄机";
 }
@@ -705,6 +713,17 @@ function updateRitualStatus(isVisible = false) {
   const ritualStatus = document.querySelector("#ritual-status");
 
   ritualStatus.classList.toggle("is-visible", isVisible);
+}
+
+function hideAISection() {
+  const aiSection = document.querySelector("#ai-section");
+  const aiResult = document.querySelector("#ai-result");
+
+  updateRitualStatus();
+  aiSection.classList.add("is-empty");
+  aiResult.classList.remove("is-visible", "is-error", "has-ink-lines");
+  aiResult.innerHTML = "";
+  updateAIButtonState();
 }
 
 function resetAnalysisOutput() {
@@ -735,6 +754,7 @@ function selectCategory(category) {
   }
 
   currentCategory = category;
+  document.body.classList.toggle("is-professional-mode", isProfessionalCategory(category));
   document.querySelector("#detail-title").textContent = categoryConfig.title;
   document.querySelectorAll(".module-card[data-category]").forEach((moduleCard) => {
     const isSelected = moduleCard.dataset.category === category;
@@ -743,7 +763,9 @@ function selectCategory(category) {
     moduleCard.setAttribute("aria-pressed", String(isSelected));
   });
 
-  if (latestBaZiData) {
+  if (isProfessionalCategory(category)) {
+    hideAISection();
+  } else if (latestBaZiData) {
     renderAIResult(`${categoryConfig.title}已就位，可请先生批注。`);
     updateAIButtonState();
   }
@@ -857,8 +879,14 @@ function handleStartButtonClick() {
 
     latestBaZiData = baziData;
     renderBaZi(baziData);
-    renderAIResult("命盘已定，可启玄机。");
-    updateAIButtonState();
+
+    if (isProfessionalCategory()) {
+      hideAISection();
+    } else {
+      renderAIResult("命盘已定，可启玄机。");
+      updateAIButtonState();
+    }
+
     document.querySelector("#chart-section").scrollIntoView({
       behavior: "smooth",
       block: "start"
@@ -871,6 +899,11 @@ function handleStartButtonClick() {
 }
 
 async function handleAIButtonClick() {
+  if (isProfessionalCategory()) {
+    hideAISection();
+    return;
+  }
+
   if (!latestBaZiData) {
     renderAIResult("请先排定命盘", true);
     return;
